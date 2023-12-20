@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Grid-flow example</title>
+    <script src="../../../polyfill/polyfill.js"></script>
+    <style>
+      .grid {
+        display: grid;
+        grid-template-areas:
+            "top"
+            "main";
+        grid-template-rows: auto 1fr;
+        overflow: hidden;
+        resize: both;
+      }
+      .grid::grid-flow(--top) {
+        grid-area: top;
+        border: 2px solid blue;
+      }
+      .grid::grid-flow(--main) {
+        grid-area: main;
+        border: 2px solid green;
+        overflow: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        position: relative;
+        display: flex;
+      }
+      .grid > a {
+        grid-flow: --top
+      }
+      .grid > section {
+        grid-flow: --main;
+      }
+
+      a {
+        margin: 0px 10px;
+      }
+
+      section {
+        min-width: 100%;
+        width: 100%;
+        min-height: 100px;
+        scroll-snap-align: start;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid">
+      <a href="#main">Main</a>
+      <section id="main">
+        This is an example of how you can use grid-flow to inline sections with headings that navigate to them.
+      </section>
+      <a href="#details">Details</a>
+      <section id="details">
+        When layout runs,
+        the headings will be flowed into a different grid area than the sections,
+        allowing the implicit creation of tab-like interfaces.
+      </section>
+      <a href="#followup">Followup</a>
+      <section id="followup">
+        This can be combined with scroll-markers to create automatic navigation links. Example TBD.
+      </section>
+    </div>
+  </body>
+</html>

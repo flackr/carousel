@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Carousel example</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="../../../polyfill/polyfill.js"></script>
+    <style>
+      carousel {
+        display: grid;
+        position: relative;
+        grid-template:
+            'previous scroller next' 1fr
+            '. markers .' auto
+            / auto 1fr auto;
+
+        & li {
+          grid-flow: --scroller;
+        }
+
+        &::grid-flow(--scroller) {
+          grid-area: scroller;
+          overflow-x: auto;
+          scrollbar-width: none;
+          white-space: nowrap;
+          scroll-snap-type: x mandatory;
+          scroll-behavior: smooth;
+          overscroll-behavior-x: contain;
+          display: flex;
+          position: relative;
+          fragment: element;
+
+          &::scroll-left-button, &::scroll-right-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            align-self: center;
+            position: absolute;
+            z-index: 1;
+            transition: background-color 300ms, border-color 300ms, color 300ms;
+          }
+          &::scroll-left-button {
+            grid-area: previous;
+            content: '<';
+            left: 0;
+          }
+
+          &::scroll-right-button {
+            grid-area: next;
+            content: '>';
+            right: 0;
+          }
+
+          &::fragment {
+            scroll-snap-align: center;
+            display: flex;
+            width: 100%;
+
+            &::scroll-marker {
+              grid-flow: --markers;
+              cursor: pointer;
+              width: 1em;
+              height: 1em;
+              border-radius: 100%;
+              border: 2px solid #777;
+              background: white content-box;
+
+              &:checked {
+                background: #99f content-box;
+              }
+            }
+          }
+        }
+
+        &::grid-flow(--markers) {
+          grid-area: markers;
+          display: flex;
+          justify-content: center;
+        }
+      }
+
+    </style>
+  </head>
+  <body>
+    <h1>Carousel example</h1>
+    <p>
+      This is an example of the carousel
+      with pseudo-elements from the <a href="https://css.oddbird.net/overflow/explainer/">CSS Overflow Extensions Explainer</a>
+      referesented by full html elements.
+      When you resize the carousel
+      it automatically adjusts how many pages are needed
+      to display all of the items.
+      The number of scroll markers also dynamically changes with the number of pages.
+    </p>
+    <carousel>
+      <li><figure><img src="images/loc1.jpg"><figcaption>Item 1</figcaption></figure></li>
+      <li><figure><img src="images/loc2.jpg"><figcaption>Item 2</figcaption></figure></li>
+      <li><figure><img src="images/loc3.jpg"><figcaption>Item 3</figcaption></figure></li>
+      <li><figure><img src="images/loc4.jpg"><figcaption>Item 4</figcaption></figure></li>
+      <li><figure><img src="images/loc5.jpg"><figcaption>Item 5</figcaption></figure></li>
+      <li><figure><img src="images/loc6.jpg"><figcaption>Item 6</figcaption></figure></li>
+      <li><figure><img src="images/loc7.jpg"><figcaption>Item 7</figcaption></figure></li>
+      <li><figure><img src="images/loc1.jpg"><figcaption>Item 8</figcaption></figure></li>
+    </carousel>
+    <h2>The code</h2>
+    <p>
+      As the polyfill changes the DOM,
+      you need to look at the original page source
+      to see the original HTML and CSS the author writes.
+      In short, the original HTML is a simple list of items:
+    </p>
+    <pre>
+&lt;carousel&gt;
+  &lt;li&gt;&lt;figure&gt;&lt;img src="..."&gt;&lgt;figcaption&gt;Item 1&lt;/figcaption&gt;&lt;/figure&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;figure&gt;&lt;img src="..."&gt;&lgt;figcaption&gt;Item 2&lt;/figcaption&gt;&lt;/figure&gt;&lt;/li&gt;
+  ...
+&lt;/carousel&gt;
+</pre>
+    <p>
+      The carousel element is styled as <pre>display: grid</pre>,
+      using the following set of CSS features
+      to achieve the overall layout and design.
+    </p>
+    <h2>Features</h2>
+    <p>This carousel makes use of polyfills of the following features:</p>
+    <h3>Stylable fragmentation</h3>
+    <p>
+      The pages of the carousel are created automatically
+      at the point where the content overflows the container.
+      The container can be styled,
+      and even use independent flexboxes or grids or other layouts.</p>
+    <p><a href="../../fragmentation/">Standalone fragmentation demo</a></p>
+    <h3>Flowing into grid areas</h3>
+    <p>
+      The elements within the carousel are all flowed into a common grid area
+      using the <pre>grid-flow</pre> property.
+      This is also used to flow the scroll markers into the bottom grid area of the carousel.
+    </p>
+    <p><a href="../../grid-flow/">Standalone grid-flow demo</a></p>
+    <h3>Scroll markers</h3>
+    <p>
+      The <pre>::scroll-marker</pre> pseudo-class is used to create a marker
+      which scrolls / tracks when the target element is scrolled into view.
+    </p>
+    <p><a href="../../scroll-marker/">Standalone scroll-marker demo</a></p>
+    <h3>Scroll buttons</h3>
+    <p>
+      Scroll button pseudoclasses are used to
+      automatically add buttons allowing scrolling in particular directions.
+    </p>
+    <p><a href="../../scroll-button/">Standalone scroll-*-button demo</a></p>
+  </body>
+</html>

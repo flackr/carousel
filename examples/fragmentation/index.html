@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Carousel example</title>
+    <script src="../../polyfill/polyfill.js"></script>
+    <style>
+      .container {
+        overflow: auto;
+        scroll-snap-type: x mandatory;
+        border: 2px solid blue;
+        resize: both;
+        width: 563px;
+        height: 300px;
+        position: relative;
+        display: flex;
+        fragment: element;
+      }
+      .container::fragment > div {
+        font-size: 64px;
+        padding: 20px;
+        border: 2px solid #4af;
+        margin: 5px;
+      }
+      .container::fragment {
+        border: 2px solid #f0f;
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+        /* Targets 80% the size of the scroller */
+        min-width: 80%;
+        width: 80%;
+        scroll-snap-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Stylable element fragmentation</h1>
+    <div class="container">
+      <div>One</div>
+      <div>Two</div>
+      <div>Three</div>
+      <div>Four</div>
+      <div>Five</div>
+      <div>Six</div>
+      <div>Seven</div>
+      <div>Eight</div>
+      <div>Nine</div>
+      <div>Ten</div>
+    </div>
+    <p>
+      Resize the container.
+      The elements will automatically flow into styled fragments
+      up until they would cause overflow within the current fragment.
+      The result is automatic pagination
+      into the number of items which fit in each page.
+    </p>
+    <p>
+      In order to "peek" into the previous and next pages,
+      the fragments are sized to be 80% the width of the container.
+    </p>
+  </body>
+</html>

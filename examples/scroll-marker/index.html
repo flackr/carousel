@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scroll-marker and grid-flow example</title>
+    <script src="../../polyfill/polyfill.js"></script>
+    <style>
+      .grid {
+        display: grid;
+        grid-template-areas:
+            "side main";
+        grid-template-columns: auto 1fr;
+        overflow: hidden;
+        resize: both;
+        counter-reset: section;
+      }
+      .grid::grid-flow(--side) {
+        grid-area: side;
+        border: 2px solid blue;
+      }
+      .grid::grid-flow(--main) {
+        grid-area: main;
+        border: 2px solid green;
+        overflow: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        position: relative;
+      }
+      section::scroll-marker {
+        grid-flow: --side;
+        cursor: pointer;
+        margin: 10px;
+        counter-increment: section;
+        content: "Section " counter(section);
+      }
+      section::scroll-marker:checked {
+        color: blue;
+      }
+      .grid > section {
+        grid-flow: --main;
+      }
+      section {
+        min-height: 80%;
+        scroll-snap-align: start;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid">
+      <section>
+        This is an example of how you can use ::scroll-marker with grid-flow
+        to automatically create navigation points which take you to various points in the document.
+        The markers are created automatically for each section.
+      </section>
+      <section>
+        When layout runs,
+        the pseudo markers are generated for each section,
+        and then flowed into a different grid area than the sections themselves.
+      </section>
+      <section>
+        This is an example of the advanced pattern.
+      </section>
+    </div>
+  </body>
+</html>
