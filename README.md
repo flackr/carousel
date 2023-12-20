@@ -72,3 +72,25 @@ The CSS automatically flows the list items into page container pseudo-elements
 which have individual snap points and scroll markers.
 
 See the [example](https://flackr.github.io/carousel/examples/carousel/image/) using the polyfill.
+
+## Alternatives
+
+There are many other ways that we could deliver these capabilities.
+This section will collect other potential alternatives with their callenges and advantages.
+
+### <carousel> element
+
+An element could encapsulate a lot of the features without needing to express them directly as CSS properties.
+One of the main challenges with this approach is that carousels have a large amount of variation in their designs.
+This would likely add significant complexity to the design of a high level element,
+or require some of the individual features proposed anyways.
+
+### Templated content
+
+It would be nice for authors to be able to slot in rich content,
+as they would with a custom element.
+For example, they could provide a template of content to be created per page
+with a slot for the contents of that page.
+
+One challenge is that the original content should retain its original structure.
+This may be possible by dynamically slotting elements to particular pages in a shadow tree.
