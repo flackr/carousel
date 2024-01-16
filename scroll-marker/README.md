@@ -15,9 +15,25 @@ many more advanced UI patterns can be solved in CSS.
 
 ## Proposal
 
-The `::scroll-marker` pseudo-class will create a focusable marker which when activated will scroll the element into view.
+We create a `::scroll-markers` pseudo-element on [scroll containers](https://www.w3.org/TR/css-overflow-3/#scroll-container).
+This pseudo-element will implicitly have `contain: size`,
+and be positioned after the `:after` pseudo-element.
+
+The `::scroll-marker` pseudo-element will create a focusable marker which when activated will scroll the element into view.
+This pseudo-element will be flowed into the `::scroll-markers` pseudo-element of its containing scroll container.
 
 ```css
+ul {
+  overflow: auto;
+}
+ul::scroll-markers {
+  display: flex;
+  width: 100%;
+  /* Reserve space for scroll markers */
+  height: 40px;
+  /* Allow scrolling if too many scroll markers are inserted. */
+  overflow: auto;
+}
 li::scroll-marker {
   content: "#";
 }
@@ -40,3 +56,4 @@ the first marker which is considered to be scrolled into view becomes selected.
 Typically, scroll markers will be used with [grid-flow](../grid-flow/) to create navigation points.
 
 See an [example](https://flackr.github.io/carousel/examples/scroll-marker/) built on the polyfill.
+Note, this example is built using the previous version of this proposal and will be updated soon.
