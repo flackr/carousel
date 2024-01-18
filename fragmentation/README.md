@@ -18,17 +18,16 @@ and thus can be applied post-layout.
 E.g. the following [example](https://jsbin.com/defazup/edit?html,output) automatically paginates a list of items snapping each page into view.
 ```css
 ul {
-  display: flex;
   overflow: auto;
   container-type: size;
-  column-width: 100cqw;
+  columns: 1;
 }
 ul::fragment {
   scroll-snap-slign: center;
 }
 ```
 
-This pseudoclass could additionally be used for the creation of [scroll-markers](../scroll-marker/):
+This pseudoclass can additionally be used for the creation of [scroll-markers](../scroll-marker/):
 ```css
 ul::fragment::scroll-marker {
   /* Marker styling */
@@ -37,4 +36,18 @@ ul::fragment::scroll-marker {
 
 ## Example
 
-An example will be coming once the polyfill is updated to support it.
+See an [example](https://flackr.github.io/carousel/examples/fragmentation/) built on the polyfill.
+
+## Missing capabilities
+
+While the above can handle straightforward cases, it is missing the ability to style a few interesting edge cases:
+
+1. Peeking into subsequent pages.
+
+   Column layouts force an integer number of columns per page.
+   As such, it's not possible to make the next column partially visible with a slightly smaller width.
+
+2. Making a block direction carousel.
+
+   We likely need a way either for column overflow to flow in the block direction,
+   or a way to apply page fragmentation within a block as we can do with columns.

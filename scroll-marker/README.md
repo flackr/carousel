@@ -56,4 +56,3 @@ the first marker which is considered to be scrolled into view becomes selected.
 Typically, scroll markers will be used with [grid-flow](../grid-flow/) to create navigation points.
 
 See an [example](https://flackr.github.io/carousel/examples/scroll-marker/) built on the polyfill.
-Note, this example is built using the previous version of this proposal and will be updated soon.

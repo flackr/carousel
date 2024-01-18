@@ -14,11 +14,7 @@
         resize: both;
         counter-reset: section;
       }
-      .grid::grid-flow(--side) {
-        grid-area: side;
-        border: 2px solid blue;
-      }
-      .grid::grid-flow(--main) {
+      .scroller {
         grid-area: main;
         border: 2px solid green;
         overflow: auto;
@@ -26,8 +22,12 @@
         scroll-behavior: smooth;
         position: relative;
       }
+      .scroller::scroll-markers {
+        grid-area: side;
+        border: 2px solid blue;
+        width: 120px;
+      }
       section::scroll-marker {
-        grid-flow: --side;
         cursor: pointer;
         margin: 10px;
         counter-increment: section;
@@ -35,9 +35,6 @@
       }
       section::scroll-marker:checked {
         color: blue;
-      }
-      .grid > section {
-        grid-flow: --main;
       }
       section {
         min-height: 80%;
@@ -47,19 +44,21 @@
   </head>
   <body>
     <div class="grid">
-      <section>
-        This is an example of how you can use ::scroll-marker with grid-flow
-        to automatically create navigation points which take you to various points in the document.
-        The markers are created automatically for each section.
-      </section>
-      <section>
-        When layout runs,
-        the pseudo markers are generated for each section,
-        and then flowed into a different grid area than the sections themselves.
-      </section>
-      <section>
-        This is an example of the advanced pattern.
-      </section>
+      <div class="scroller">
+        <section>
+          This is an example of how you can use ::scroll-marker with grid-flow
+          to automatically create navigation points which take you to various points in the document.
+          The markers are created automatically for each section.
+        </section>
+        <section>
+          When layout runs,
+          the pseudo markers are generated for each section,
+          and then flowed into a different grid area than the sections themselves.
+        </section>
+        <section>
+          This is an example of the advanced pattern.
+        </section>
+      </div>
     </div>
   </body>
 </html>

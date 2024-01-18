@@ -7,12 +7,6 @@ if (registerPropertySupported) {
     initialValue: 'none'
   });
   CSS.registerProperty({
-    name: '--fragment',
-    syntax: 'none | element',
-    inherits: false,
-    initialValue: 'none'
-  });
-  CSS.registerProperty({
     name: '--scroll-marker',
     syntax: 'none | yes',
     inherits: false,
@@ -210,61 +204,68 @@ function relativeOffset(e1, e2) {
   return offset;
 }
 
+function absolutePositionContainer(ancestor) {
+  while (ancestor && ancestor.parentElement) {
+    if (getComputedStyle(ancestor).position != 'static')
+      break;
+    ancestor = ancestor.parentElement;
+  }
+  return ancestor;
+}
+
 class FragmentNode {
   constructor(node) {
+    this.container = document.createElement('fragments-container');
     this.node = node;
-    this.children = [];
     let child = null;
     while (child = node.firstElementChild) {
-      child.remove();
-      this.children.push(child);
+      this.container.appendChild(child);
     }
-    this.update();
+    node.appendChild(this.container);
+
     const resizeObserver = new ResizeObserver((entries) => {
       this.update();
     });
-    resizeObserver.observe(node);
+    resizeObserver.observe(this.container);
+    // TODO: The above observation should be sufficient. Why is this required?
+    resizeObserver.observe(this.node);
   }
 
   update() {
-    while (this.node.firstChild) {
-      this.node.firstChild.remove();
+    // First compute, the offset of abs pos children for adjusting bounds of constructed DOM.
+    const offset = absolutePositionContainer(this.node).getBoundingClientRect();
+    const cs = getComputedStyle(this.node);
+    const borderTop = parseFloat(cs.borderTop) || 0;
+    const borderLeft = parseFloat(cs.borderLeft) || 0;
+    // Remove previous boxes.
+    let fragmentBoxes = Array.prototype.slice.apply(this.node.children).filter((c) => c.tagName == 'FRAGMENT');
+    for (let box of fragmentBoxes) {
+      box.remove();
     }
-    let remaining = this.children.slice();
-    while (remaining.length > 0) {
-      let fragment = document.createElement('div');
-      fragment.originatingElement = this.node;
-      fragment.className = 'fragment';
-      this.node.appendChild(fragment);
-      fragment.appendChild(remaining[0]);
-      let i = 1;
-      for (; i < remaining.length; ++i) {
-        let child = remaining[i];
-        fragment.appendChild(child);
-        let cs = getComputedStyle(fragment);
-        let space = {
-          width: fragment.offsetWidth - parseFloat(cs.paddingRight),
-          height: fragment.offsetHeight - parseFloat(cs.paddingBottom),
-        }
-        let pos = relativeOffset(fragment, child);
-        const ROUNDING = 1;
-        if (pos.offsetLeft + child.offsetWidth > space.width + ROUNDING ||
-            pos.offsetTop + child.offsetHeight > space.height + ROUNDING) {
-          break;
-        }
-      }
-      remaining = remaining.slice(i);
+    // Create new boxes.
+    const rects = this.container.getClientRects();
+    for (let rect of rects) {
+      let box = document.createElement('fragment');
+      box.className = 'fragment';
+      box.style.top = `${rect.y - offset.y - this.node.scrollTop - borderTop}px`;
+      box.style.left = `${rect.x - offset.x - this.node.scrollLeft - borderLeft}px`;
+      box.style.width = `${rect.width}px`;
+      box.style.height = `${rect.height}px`;
+      this.node.insertBefore(box, this.container);
     }
   }
 }
 
 function updateSelectors(selector, forPseudo) {
   return selector.
-      replaceAll('::fragment', '>.fragment').
+      replaceAll('::fragment', '>fragment').
       replace(/::grid-flow\(([^)]*)\)/g, '>.grid-flow-\$1').
       replace(/[^ >+,]*::scroll-(left|right|up|down)-button/g, forPseudo?'.scroll-\$1-button::before':'.scroll-\$1-button').
-      replace(/[^ >+,]*::scroll-marker$/g, forPseudo?'.scroll-marker::before':'.scroll-marker').
-      replace(/[^ >+,]*::scroll-marker:checked$/g, forPseudo?'.scroll-marker:checked::before':'.scroll-marker:checked');
+      // TODO: Track where the corresponding scroll-markers are flowed into,
+      // and target that particular subtree.
+      replace(/.*[^ >+,]*::scroll-marker$/g, forPseudo?'scroll-markers>.scroll-marker::before':'scroll-markers>.scroll-marker').
+      replace(/.*[^ >+,]*::scroll-marker:checked$/g, forPseudo?'scroll-markers>.scroll-marker:checked::before':'scroll-markers>.scroll-marker:checked').
+      replace(/.*[^ >+,]*::scroll-markers$/g, 'scroll-markers');
 }
 
 function getElems(selectors) {
@@ -300,11 +301,11 @@ let markerSelectors = new Set();
 let flowSelectors = new Set();
 
 function handleScroll() {
-  const markers = this.markers || [];
-  if (markers.length == 0)
+  const markers = this.scrollMarkerArea?.children;
+  if (!markers || markers.length == 0)
     return;
-  for (const element of markers) {
-    const marker = element.markerElement;
+  for (const marker of markers) {
+    const element = marker.originatingElement;
     let position = relativeOffset(this, element);
     position.offsetLeft -= this.scrollLeft;
     position.offsetTop -= this.scrollTop;
@@ -330,6 +331,9 @@ function addMarker(elem) {
   if (elem.markerElement) {
     return;
   }
+  const scroller = eventTarget(ancestorScroller(elem));
+  if (!scroller.scrollMarkerArea)
+    return;
   let marker = document.createElement('input');
   elem.pseudoElements = elem.pseudoElements || [];
   elem.pseudoElements.push(marker);
@@ -353,11 +357,8 @@ function addMarker(elem) {
       });
     }
   });
-  elem.parentElement.insertBefore(marker, elem.nextElementSibling);
-  const scroller = eventTarget(ancestorScroller(elem));
-  scroller.markers = scroller.markers || [];
+  scroller.scrollMarkerArea.appendChild(marker);
   // TODO: Sort markers by DOM order.
-  scroller.markers.push(elem)
   scroller.onscroll = handleScroll;
   scroller.onscrollend = resetHandleScroll;
   handleScroll.apply(scroller);
@@ -375,7 +376,16 @@ function update() {
 .scroll-marker {
   appearance: none;
   display: block;
+}
+scroll-markers {
+  contain: size;
+  display: block;
+}
+.fragment {
+  position: absolute;
+  box-sizing: border-box;
 }\n`;
+  let markerAreaSelectors = new Set();
   let fragmentSelectors = new Set();
   let flowContainers = {};
   let remap = {};
@@ -420,6 +430,11 @@ function update() {
       flowContainers[selector] = flowContainers[selector] || new Set();
       flowContainers[selector].add(name);
     }
+    let markers = /^(.*)::scroll-markers$/.exec(block.selector);
+    if (markers) {
+      const selector = updateSelectors(markers[1]);
+      markerAreaSelectors.add(selector);
+    }
     let marker = /^(.*)::scroll-marker$/.exec(block.selector);
     if (marker) {
       const selector = updateSelectors(marker[1]);
@@ -428,6 +443,12 @@ function update() {
       if (!registerPropertySupported) {
         extraCSS += `:where(${selector}>*) {\n  --scroll-marker: none;\n}\n`;
       }
+    }
+    let fragment = /^(.*)::fragment/.exec(block.selector);
+    if (fragment) {
+      // Selector on which grid fragment was added.
+      const selector = updateSelectors(fragment[1]);
+      fragmentSelectors.add(selector);
     }
 
     let mutatedSelector = updateSelectors(selector);
@@ -446,13 +467,6 @@ function update() {
       if (pseudoProps)
         extraCSS += `${updateSelectors(selector, true)} {\n${pseudoProps}}\n`;
     }
-    if (block.props['fragment']) {
-      extraCSS += `${mutatedSelector} {\n  --fragment: ${block.props.fragment};\n}\n`;
-      if (!registerPropertySupported) {
-        extraCSS += `:where(${mutatedSelector}>*) {\n  --fragment: none;\n}\n`;
-      }
-      fragmentSelectors.add(mutatedSelector);
-    }
   }
   generated.innerHTML = extraCSS;
   document.head.appendChild(generated);
@@ -468,6 +482,13 @@ function update() {
       }
     }
   }
+  for (let elem of getElems(markerAreaSelectors)) {
+    if (elem.scrollMarkerArea)
+      continue;
+    elem.scrollMarkerArea = document.createElement('scroll-markers');
+    elem.parentElement.insertBefore(elem.scrollMarkerArea, elem.nextElementSibling);
+  }
+
   const SCROLL_AMOUNTS = {
     right: {left: 40},
     left: {left: -40},
@@ -527,10 +548,7 @@ function update() {
 
   // Process fragmented elements.
   for (let elem of getElems(fragmentSelectors)) {
-    const fragment = getComputedStyle(elem).getPropertyValue('--fragment');
-    if (fragment == 'element') {
-      new FragmentNode(elem);
-    }
+    new FragmentNode(elem);
   }
 }
 
@@ -561,11 +579,6 @@ Element.prototype.appendChild = function(node) {
   this.insertBefore(node, null);
 }
 Element.prototype.removeChild = function(node) {
-  // Remove from list of marker elements
-  if (node.markerElement) {
-    const scroller = eventTarget(ancestorScroller(node));
-    scroller.markers.splice(scroller.markers.indexOf(node), 1);
-  }
   // Remove pseudo elements generated by this element, e.g. the scroll marker for the fragment.
   if (node.pseudoElements) {
     for (let pseudo of node.pseudoElements) {

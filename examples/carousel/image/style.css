@@ -9,10 +9,12 @@ carousel {
   & li {
     padding: 10px;
     list-style-type: none;
-    display: block;
+    display: inline-block;
     position: relative;
     aspect-ratio: 2 / 3;
+    height: 100%;
     box-sizing: border-box;
+    contain: size;
 
     & > figure {
       width: 100%;

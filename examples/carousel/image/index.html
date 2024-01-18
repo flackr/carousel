@@ -9,6 +9,7 @@
       carousel {
         display: grid;
         position: relative;
+        height: 300px;
         grid-template:
             'previous scroller next' 1fr
             '. markers .' auto
@@ -22,13 +23,22 @@
           grid-area: scroller;
           overflow-x: auto;
           scrollbar-width: none;
-          white-space: nowrap;
           scroll-snap-type: x mandatory;
           scroll-behavior: smooth;
           overscroll-behavior-x: contain;
-          display: flex;
+          container-type: size;
+          height: 100%;
+          columns: 1;
           position: relative;
-          fragment: element;
+          text-align: center;
+
+          &::scroll-markers {
+            width: 100%;
+            height: 100%;
+            grid-flow: --markers;
+            display: flex;
+            justify-content: center;
+          }
 
           &::scroll-left-button, &::scroll-right-button {
             width: 50px;
@@ -53,11 +63,8 @@
 
           &::fragment {
             scroll-snap-align: center;
-            display: flex;
-            width: 100%;
 
             &::scroll-marker {
-              grid-flow: --markers;
               cursor: pointer;
               width: 1em;
               height: 1em;
@@ -74,8 +81,8 @@
 
         &::grid-flow(--markers) {
           grid-area: markers;
-          display: flex;
-          justify-content: center;
+          height: 1.5em;
+          position: relative;
         }
       }
 
@@ -117,7 +124,7 @@
 &lt;/carousel&gt;
 </pre>
     <p>
-      The carousel element is styled as <pre>display: grid</pre>,
+      The carousel element is styled as <code>display: grid</code>,
       using the following set of CSS features
       to achieve the overall layout and design.
     </p>
@@ -126,21 +133,25 @@
     <h3>Stylable fragmentation</h3>
     <p>
       The pages of the carousel are created automatically
-      at the point where the content overflows the container.
-      The container can be styled,
-      and even use independent flexboxes or grids or other layouts.</p>
+      at the point where the content overflows the container
+      through the use of column fragmentation.
+      The columns can be given a limited set of non-layout affecting styles.
+      In this demo, they are given a snap alignment and generate<code>::scroll-marker</code> pseudos.
+    </p>
     <p><a href="../../fragmentation/">Standalone fragmentation demo</a></p>
     <h3>Flowing into grid areas</h3>
     <p>
       The elements within the carousel are all flowed into a common grid area
-      using the <pre>grid-flow</pre> property.
+      using the <code>grid-flow</code> property.
       This is also used to flow the scroll markers into the bottom grid area of the carousel.
     </p>
-    <p><a href="../../grid-flow/">Standalone grid-flow demo</a></p>
+    <p><a href="../../grid-flow/tabs/">Standalone grid-flow demo</a></p>
     <h3>Scroll markers</h3>
     <p>
-      The <pre>::scroll-marker</pre> pseudo-class is used to create a marker
+      The <code>::scroll-marker</code> pseudo-class is used to create a marker
       which scrolls / tracks when the target element is scrolled into view.
+      These are automatically placed within the <code>::scroll-markers</code> pseudo
+      following the scroll container.
     </p>
     <p><a href="../../scroll-marker/">Standalone scroll-marker demo</a></p>
     <h3>Scroll buttons</h3>
