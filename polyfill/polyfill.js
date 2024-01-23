@@ -79,7 +79,7 @@ function parseCSS(str) {
   }
   function parseWord(str, i) {
     const start = i;
-    while (i < str.length && /\w/.exec(str(i))) {
+    while (i < str.length && /\w/.exec(str[i])) {
       ++i;
     }
     return {word: str.substring(start, i), next: i};
