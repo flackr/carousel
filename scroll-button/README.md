@@ -2,7 +2,7 @@
 
 ## Proposal
 
-Allow the creation of interactive scroll buttons as pseudoclasses, e.g.
+Allow the creation of interactive scroll buttons as pseudo-elements, e.g.
 
 ```css
 .scroller {
@@ -21,6 +21,13 @@ Allow the creation of interactive scroll buttons as pseudoclasses, e.g.
 These should be focusable, behaving as a button.
 When activated, a scroll should be performed in the direction by some amount.
 When it is not possible to scroll in that direction, they should be disabled.
+
+The order of the pseudo-elements with respect to the element should be:
+- block direction previous,
+- inline direction previous,
+- the scrolling element,
+- inline direction next,
+- block direction next.
 
 ## Open questions
 
