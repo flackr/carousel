@@ -23,7 +23,7 @@ ul {
   columns: 1;
 }
 ul::fragment {
-  scroll-snap-slign: center;
+  scroll-snap-align: center;
 }
 ```
 
