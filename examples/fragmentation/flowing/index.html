@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Carousel example</title>
+    <script src="../../../polyfill/polyfill.js"></script>
+    <style>
+      .grid {
+        display: grid;
+        grid-template-areas:
+            "main"
+            "markers";
+        width: 563px;
+        height: 300px;
+        grid-template-rows: 1fr auto;
+        overflow: hidden;
+        resize: both;
+        counter-reset: section;
+      }
+      .scroller {
+        grid-area: main;
+        overflow-x: auto;
+        border: 1px solid black;
+        scroll-snap-type: x mandatory;
+        position: relative;
+        container-type: size;
+        columns: 1;
+      }
+      .scroller::fragment {
+        scroll-snap-align: center;
+      }
+      .scroller::scroll-markers {
+        height: 30px;
+        grid-area: markers;
+        text-align: center;
+      }
+      .scroller::fragment::scroll-marker {
+        content: "";
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        box-sizing: border-box;
+        display: inline-block;
+        border: 1px solid gray;
+        background: white content-box;
+
+        &:checked {
+          background: #99f content-box;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Stylable element fragmentation</h1>
+    <div class="grid">
+      <div class="scroller">
+        <h1>Title</h1>
+        <p>
+          This is an example of some long form flowing content.
+          In real examples,
+          this could be things such as:
+        </p>
+        <ul>
+          <li>a description of a product,</li>
+          <li></li>a product manual,</li>
+          <li>instructions,</li>
+          <li>or other free flowing content</li>
+        </ul>
+        <h2>Free flowing content</h2>
+        <p>
+          The content can be arbitrarily rich.
+          It can make use of the <code>break-*</code> properties to control where breaks should occur.
+        </p>
+        <p>
+          The contents will dynamically fill the available space,
+          and fragment where it would overflow the space.
+          The result is that the content can be read in a paginated
+          fashion much like a book.
+        </p>
+        <h2>Summary</h2>
+        <p>You can have long free flowing content with automatic pagination.</p>
+        <p>
+          Combined with scroll markers,
+          anchors can be created to those pages allowing for quick navigation,
+          providing a sense of overall progress,
+          providing a page count, etc.
+        </p>
+      </div>
+    </div>
+    <p>
+      Resize the container.
+      The text automatically flows into columns.
+      The result is automatic pagination
+      into the content which fits in each page.
+    </p>
+  </body>
+</html>

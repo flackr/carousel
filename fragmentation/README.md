@@ -36,7 +36,9 @@ ul::fragment::scroll-marker {
 
 ## Example
 
-See an [example](https://flackr.github.io/carousel/examples/fragmentation/) built on the polyfill.
+See examples built on the polyfill:
+* [Itemized block children](https://flackr.github.io/carousel/examples/fragmentation/)
+* [Flowing content](https://flackr.github.io/carousel/examples/fragmentation/flowing/)
 
 ## Missing capabilities
 

@@ -78,7 +78,7 @@ See the [example](https://flackr.github.io/carousel/examples/carousel/image/) us
 There are many other ways that we could deliver these capabilities.
 This section will collect other potential alternatives with their callenges and advantages.
 
-### <carousel> element
+### &lt;carousel&gt; element
 
 An element could encapsulate a lot of the features without needing to express them directly as CSS properties.
 One of the main challenges with this approach is that carousels have a large amount of variation in their designs.

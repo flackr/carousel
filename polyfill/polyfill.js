@@ -213,10 +213,25 @@ function absolutePositionContainer(ancestor) {
   return ancestor;
 }
 
+function columnWidth(elem) {
+  // Compute the used column width of the given element.
+  const cs = getComputedStyle(elem);
+  let columns = cs.columnCount == 'auto' ? 0 : parseInt(cs.columnCount);
+  if (columns == 0 && cs.columnWidth != 'auto') {
+    columns = Math.floor(elem.clientWidth / parseFloat(cs.columnWidth));
+  }
+  // Assume 1 column if not known.
+  if (columns == 0) {
+    columns = 1;
+  }
+  return elem.clientWidth / columns;
+}
+
 class FragmentNode {
   constructor(node) {
     this.container = document.createElement('fragments-container');
     this.node = node;
+    this.fragments = {};
     let child = null;
     while (child = node.firstElementChild) {
       this.container.appendChild(child);
@@ -237,21 +252,54 @@ class FragmentNode {
     const cs = getComputedStyle(this.node);
     const borderTop = parseFloat(cs.borderTop) || 0;
     const borderLeft = parseFloat(cs.borderLeft) || 0;
-    // Remove previous boxes.
-    let fragmentBoxes = Array.prototype.slice.apply(this.node.children).filter((c) => c.tagName == 'FRAGMENT');
-    for (let box of fragmentBoxes) {
-      box.remove();
-    }
-    // Create new boxes.
+    const colWidth = columnWidth(this.node);
+    let columns = {};
     const rects = this.container.getClientRects();
     for (let rect of rects) {
-      let box = document.createElement('fragment');
+      if (rect.width == 0 || rect.height == 0)
+        continue;
+      const absrect = {
+        top: rect.y - offset.y + this.node.scrollTop - borderTop,
+        left: rect.x - offset.x + this.node.scrollLeft - borderLeft,
+        bottom: rect.bottom - offset.y + this.node.scrollTop - borderTop,
+        right: rect.right - offset.x + this.node.scrollLeft - borderLeft,
+      };
+      let index = Math.max(0, Math.floor(absrect.left / colWidth));
+      if (columns[index]) {
+        columns[index].left = Math.min(columns[index].left, absrect.left);
+        columns[index].top = Math.min(columns[index].top, absrect.top);
+        columns[index].right = Math.max(columns[index].right, absrect.right);
+        columns[index].bottom = Math.max(columns[index].bottom, absrect.bottom);
+      } else {
+        columns[index] = absrect;
+      }
+    }
+    // Remove previous boxes which no longer exist.
+    for (let index in this.fragments) {
+      if (!columns[index]) {
+        this.fragments[index].remove();
+        delete this.fragments[index];
+      }
+    }
+    // Create / update boxes.
+    for (let index in columns) {
+      let rect = columns[index];
+      let box = null;
+      let created = false;
+      if (this.fragments[index]) {
+        box = this.fragments[index];
+      } else {
+        created = true;
+        this.fragments[index] = box = document.createElement('fragment');
+      }
       box.className = 'fragment';
-      box.style.top = `${rect.y - offset.y - this.node.scrollTop - borderTop}px`;
-      box.style.left = `${rect.x - offset.x - this.node.scrollLeft - borderLeft}px`;
-      box.style.width = `${rect.width}px`;
-      box.style.height = `${rect.height}px`;
-      this.node.insertBefore(box, this.container);
+      box.style.top = `${rect.top}px`;
+      box.style.left = `${rect.left}px`;
+      box.style.width = `${rect.right - rect.left}px`;
+      box.style.height = `${rect.bottom - rect.top}px`;
+      if (created) {
+        this.node.insertBefore(box, this.container);
+      }
     }
   }
 }
