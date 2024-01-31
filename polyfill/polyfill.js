@@ -432,6 +432,7 @@ scroll-markers {
 .fragment {
   position: absolute;
   box-sizing: border-box;
+  pointer-events: none;
 }\n`;
   let markerAreaSelectors = new Set();
   let fragmentSelectors = new Set();
