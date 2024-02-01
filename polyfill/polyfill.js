@@ -346,6 +346,7 @@ function eventTarget(scroller) {
 }
 
 let markerSelectors = new Set();
+let markerVars = new Set();
 let flowSelectors = new Set();
 
 function handleScroll() {
@@ -375,7 +376,7 @@ function resetHandleScroll() {
   this.onscroll = handleScroll;
 }
 
-function addMarker(elem) {
+function addMarker(elem, usedProps) {
   if (elem.markerElement) {
     return;
   }
@@ -388,6 +389,18 @@ function addMarker(elem) {
   elem.markerElement = marker;
   marker.originatingElement = elem;
   marker.className = 'scroll-marker';
+  // Copy attributes from originating element so attr functions work.
+  const EXCLUDED = ['name', 'type', 'class', 'style'];
+  for (let name of elem.getAttributeNames()) {
+    if (EXCLUDED.indexOf(name) != -1)
+      continue;
+    marker.setAttribute(name, elem.getAttribute(name));
+  }
+  // Copy used custom properties from originating element.
+  const cs = getComputedStyle(elem);
+  for (let name of markerVars) {
+    marker.style.setProperty(name, cs.getPropertyValue(name));
+  }
   marker.setAttribute('type', 'radio');
   // TODO: Name radio buttons something unique per scrollable area.
   marker.setAttribute('name', 'scroll-marker');
@@ -488,6 +501,13 @@ scroll-markers {
     if (marker) {
       const selector = updateSelectors(marker[1]);
       markerSelectors.add(selector);
+      // Find properties used in markers. These must be copied to the marker.
+      for (let prop in block.props) {
+        for (let match of [...block.props[prop].matchAll(/var\(--[a-zA-Z-]+\)/g)]) {
+          const varName = match[0].substring(4, match[0].length - 1);
+          markerVars.add(varName);
+        }
+      }
       extraCSS += `${selector} {\n  --scroll-marker: yes;\n}\n`;
       if (!registerPropertySupported) {
         extraCSS += `:where(${selector}>*) {\n  --scroll-marker: none;\n}\n`;

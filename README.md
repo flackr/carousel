@@ -71,7 +71,9 @@ Where the CSS can turn this into a variety of carousel designs.
 The CSS automatically flows the list items into page container pseudo-elements
 which have individual snap points and scroll markers.
 
-See the [example](https://flackr.github.io/carousel/examples/carousel/image/) using the polyfill.
+Examples using the polyfill:
+* [Paginated marker example](https://flackr.github.io/carousel/examples/carousel/image/)
+* [Thumbnails example](https://flackr.github.io/carousel/examples/carousel/thumbnails/)
 
 ## Alternatives
 

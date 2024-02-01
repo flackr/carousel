@@ -63,33 +63,34 @@
 
           &::fragment {
             scroll-snap-align: center;
+          }
+        }
 
-            &::scroll-marker {
-              cursor: pointer;
-              width: 1em;
-              height: 1em;
-              border-radius: 100%;
-              border: 2px solid #777;
-              background: white content-box;
+        figure::scroll-marker {
+          cursor: pointer;
+          width: 2em;
+          height: 3em;
+          border-radius: 10%;
+          border: 2px solid #777;
+          background: var(--src) content-box;
+          background-size: cover;
+          transition: transform 200ms;
 
-              &:checked {
-                background: #99f content-box;
-              }
-            }
+          &:checked {
+            transform: scale(1.2);
           }
         }
 
         &::grid-flow(--markers) {
           grid-area: markers;
-          height: 1.5em;
+          height: 3.5em;
           position: relative;
         }
       }
-
     </style>
   </head>
   <body>
-    <h1>Carousel example</h1>
+    <h1>Carousel thumbnail example</h1>
     <p>
       This is an example of the carousel
       with pseudo-elements from the <a href="https://css.oddbird.net/overflow/explainer/">CSS Overflow Extensions Explainer</a>
@@ -97,17 +98,23 @@
       When you resize the carousel
       it automatically adjusts how many pages are needed
       to display all of the items.
-      The number of scroll markers also dynamically changes with the number of pages.
+    </p>
+    <p>
+      Scroll markers are created for every image.
+      These use a custom property to share the image,
+      though with support for <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/attr#type-or-unit">attr units</a> could get the image from the attribute.
     </p>
     <carousel>
-      <li><figure><img src="images/loc1.jpg"><figcaption>Item 1</figcaption></figure></li>
-      <li><figure><img src="images/loc2.jpg"><figcaption>Item 2</figcaption></figure></li>
-      <li><figure><img src="images/loc3.jpg"><figcaption>Item 3</figcaption></figure></li>
-      <li><figure><img src="images/loc4.jpg"><figcaption>Item 4</figcaption></figure></li>
-      <li><figure><img src="images/loc5.jpg"><figcaption>Item 5</figcaption></figure></li>
-      <li><figure><img src="images/loc6.jpg"><figcaption>Item 6</figcaption></figure></li>
-      <li><figure><img src="images/loc7.jpg"><figcaption>Item 7</figcaption></figure></li>
-      <li><figure><img src="images/loc1.jpg"><figcaption>Item 8</figcaption></figure></li>
+      <li><figure style="--src:url(../image/images/loc1.jpg)"><figcaption>Item 1</figcaption></figure></li>
+      <li><figure style="--src:url(../image/images/loc2.jpg)"><figcaption>Item 2</figcaption></figure></li>
+      <li><figure style="--src:url(../image/images/loc3.jpg)"><figcaption>Item 3</figcaption></figure></li>
+      <li><figure style="--src:url(../image/images/loc4.jpg)"><figcaption>Item 4</figcaption></figure></li>
+      <li><figure style="--src:url(../image/images/loc5.jpg)"><figcaption>Item 5</figcaption></figure></li>
+      <li><figure style="--src:url(../image/images/loc6.jpg)"><figcaption>Item 6</figcaption></figure></li>
+      <li><figure style="--src:url(../image/images/loc7.jpg)"><figcaption>Item 7</figcaption></figure></li>
+      <li><figure style="--src:url(../image/images/loc1.jpg)"><figcaption>Item 8</figcaption></figure></li>
+      <li><figure style="--src:url(../image/images/loc2.jpg)"><figcaption>Item 9</figcaption></figure></li>
+      <li><figure style="--src:url(../image/images/loc3.jpg)"><figcaption>Item 10</figcaption></figure></li>
     </carousel>
     <h2>The code</h2>
     <p>
@@ -118,8 +125,8 @@
     </p>
     <pre>
 &lt;carousel&gt;
-  &lt;li&gt;&lt;figure&gt;&lt;img src="..."&gt;&lt;figcaption&gt;Item 1&lt;/figcaption&gt;&lt;/figure&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;figure&gt;&lt;img src="..."&gt;&lt;figcaption&gt;Item 2&lt;/figcaption&gt;&lt;/figure&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;figure style="--src:url(...)"&gt;&lt;figcaption&gt;Item 1&lt;/figcaption&gt;&lt;/figure&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;figure style="--src:url(...)"&gt;&lt;figcaption&gt;Item 2&lt;/figcaption&gt;&lt;/figure&gt;&lt;/li&gt;
   ...
 &lt;/carousel&gt;
 </pre>
