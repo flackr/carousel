@@ -56,3 +56,20 @@ the first marker which is considered to be scrolled into view becomes selected.
 Typically, scroll markers will be used with [grid-flow](../grid-flow/) to create navigation points.
 
 See an [example](https://flackr.github.io/carousel/examples/scroll-marker/) built on the polyfill.
+
+## Alternatives / extensions
+
+### Allow full element markers
+
+Using pseudo-elements limits the types of content which can be used as a scroll marker.
+This proposal should be expanded or followed up with an element / property which allows arbitrary rich content.
+For example:
+
+```html
+<section>
+  <scrollmarker>Marker content here</scrollmarker>
+</section>
+```
+
+Pseudo-elements are however the *only* way to handle dynamic cases
+where the number of elements generating markers is not known (e.g. based on fragmentation).
