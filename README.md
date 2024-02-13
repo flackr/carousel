@@ -61,6 +61,28 @@ to access content on future pages.
 
 See the [inert](inert/) explainer for more details.
 
+## Out of scope
+
+There are a few carousel designs not currently addressed by this proposal.
+This section enumerates and explores these areas.
+
+### Cyclic carousels
+
+Many carousels allow scrolling from the last item in the list to the first, or vice versa.
+We expect that some form of cyclic overflow support (e.g. [#5411](https://github.com/w3c/csswg-drafts/issues/5411))
+will make this trivial for authors to enable.
+
+In the interim, authors could continue to use script, as they do today,
+to move content to the start / end of the carousel so that it can continuously scroll,
+or by overriding the next button behavior when at the last item to scroll back to the beginning.
+
+### Auto-advancing carousels
+
+Auto-advancing carousels introduces many potential accessibility issues if not implemented properly.
+The [Web Accessibility Initiative Carousel Animations](https://www.w3.org/WAI/tutorials/carousels/animations/) guidelines explores the necessary affordances.
+Most carousel experiences can be authored without automatically advancing sections,
+and in the mean-time author script could implement the animation following the WAI guidelines.
+
 ## Examples
 
 Using the above features, a carousel can be implemented as a semantic list of items, e.g.:
