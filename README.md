@@ -52,6 +52,15 @@ Further, the code for these adds a bit of additional complexity.
 
 See the [scroll-button](scroll-button/) explainer for more details.
 
+### CSS inert
+
+It is common and [recommended practice](https://www.w3.org/WAI/tutorials/carousels/working-example/) (See use of aria-hidden) that
+only content on the active page is included in focus order.
+Users must use the carousel navigation methods
+to access content on future pages.
+
+See the [inert](inert/) explainer for more details.
+
 ## Examples
 
 Using the above features, a carousel can be implemented as a semantic list of items, e.g.:
