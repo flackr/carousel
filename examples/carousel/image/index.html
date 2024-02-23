@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light">
     <title>Carousel example</title>
     <link rel="stylesheet" href="style.css">
     <script src="../../../polyfill/polyfill.js"></script>
@@ -44,6 +45,7 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
+            border: 1px solid;
             align-self: center;
             position: absolute;
             z-index: 1;
@@ -70,10 +72,11 @@
               height: 1em;
               border-radius: 100%;
               border: 2px solid #777;
-              background: white content-box;
+              background: transparent content-box;
 
               &:checked {
-                background: #99f content-box;
+                background: Highlight content-box;
+                border-color: Highlight;
               }
             }
           }

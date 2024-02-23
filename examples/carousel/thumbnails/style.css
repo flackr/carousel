@@ -39,3 +39,27 @@ carousel {
     }
   }
 }
+
+html {
+  font-family: system-ui, sans;
+}
+
+body {
+  display: grid;
+  place-content: center;
+}
+
+h1,h2,h3 {
+  text-wrap: balance;
+}
+
+p {
+  max-inline-size: 60ch;
+  text-wrap: pretty;
+}
+
+pre {
+  min-width: 0;
+  max-width: 100vw;
+  overflow: auto;
+}
