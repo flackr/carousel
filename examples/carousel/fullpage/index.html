@@ -14,8 +14,8 @@
         /* TODO: Ideally these would use lengths, e.g.
          * `contain calc(100% - 1em) { ... }`
          * see https://github.com/w3c/csswg-drafts/issues/10000 */
-        contain 20% { transform: scale(1); }
-        contain 80% { transform: scale(1); }
+        contain 10% { transform: scale(1); }
+        contain 90% { transform: scale(1); }
 
         exit 0%     { transform: scale(0); }
         exit 100%   { transform: scale(0); }
@@ -78,9 +78,8 @@
               background: transparent content-box;
               scroll-snap-align: center;
 
-              /* TODO: Why isn't this animation working? */
               animation: grow-in-view linear;
-              animation-timeline: view();
+              animation-timeline: view(inline);
 
               &:checked {
                 background: Highlight content-box;
