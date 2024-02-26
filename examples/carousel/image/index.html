@@ -7,10 +7,11 @@
     <link rel="stylesheet" href="style.css">
     <script src="../../../polyfill/polyfill.js"></script>
     <style>
-      carousel {
+      .carousel {
         display: grid;
         position: relative;
         height: 300px;
+        padding: 0;
         grid-template:
             'previous scroller next' 1fr
             '. markers .' auto
@@ -102,7 +103,7 @@
       to display all of the items.
       The number of scroll markers also dynamically changes with the number of pages.
     </p>
-    <carousel>
+    <ul class="carousel">
       <li><figure><img src="images/loc1.jpg"><figcaption>Item 1</figcaption></figure></li>
       <li><figure><img src="images/loc2.jpg"><figcaption>Item 2</figcaption></figure></li>
       <li><figure><img src="images/loc3.jpg"><figcaption>Item 3</figcaption></figure></li>
@@ -111,7 +112,7 @@
       <li><figure><img src="images/loc6.jpg"><figcaption>Item 6</figcaption></figure></li>
       <li><figure><img src="images/loc7.jpg"><figcaption>Item 7</figcaption></figure></li>
       <li><figure><img src="images/loc1.jpg"><figcaption>Item 8</figcaption></figure></li>
-    </carousel>
+    </ul>
     <h2>The code</h2>
     <p>
       As the polyfill changes the DOM,
@@ -120,14 +121,14 @@
       In short, the original HTML is a simple list of items:
     </p>
     <pre>
-&lt;carousel&gt;
+&lt;ul class="carousel"&gt;
   &lt;li&gt;&lt;figure&gt;&lt;img src="..."&gt;&lt;figcaption&gt;Item 1&lt;/figcaption&gt;&lt;/figure&gt;&lt;/li&gt;
   &lt;li&gt;&lt;figure&gt;&lt;img src="..."&gt;&lt;figcaption&gt;Item 2&lt;/figcaption&gt;&lt;/figure&gt;&lt;/li&gt;
   ...
-&lt;/carousel&gt;
+&lt;/ul&gt;
 </pre>
     <p>
-      The carousel element is styled as <code>display: grid</code>,
+      The <code>.carousel</code> element is styled as <code>display: grid</code>,
       using the following set of CSS features
       to achieve the overall layout and design.
     </p>
