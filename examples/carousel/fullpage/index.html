@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light">
+    <title>Carousel example</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="../../../polyfill/polyfill.js"></script>
+    <style>
+      @keyframes grow-in-view {
+        entry 0%    { transform: scale(0); }
+        entry 100%  { transform: scale(0); }
+
+        /* TODO: Ideally these would use lengths, e.g.
+         * `contain calc(100% - 1em) { ... }`
+         * see https://github.com/w3c/csswg-drafts/issues/10000 */
+        contain 20% { transform: scale(1); }
+        contain 80% { transform: scale(1); }
+
+        exit 0%     { transform: scale(0); }
+        exit 100%   { transform: scale(0); }
+      }
+      .carousel {
+        display: grid;
+        position: relative;
+        height: 500px;
+        padding: 0;
+        grid-template:
+            'previous scroller next' 1fr
+            '. markers .' auto
+            / auto 1fr auto;
+
+        & li {
+          grid-flow: --scroller;
+          width: 100%;
+        }
+
+        &::grid-flow(--scroller) {
+          grid-area: scroller;
+          overflow-x: auto;
+          scrollbar-width: none;
+          scroll-snap-type: x mandatory;
+          scroll-behavior: smooth;
+          overscroll-behavior-x: contain;
+          container-type: size;
+          height: 100%;
+          position: relative;
+          text-align: center;
+          white-space: nowrap;
+
+          &::scroll-markers {
+            display: inline-block;
+            width: 100%;
+            max-width: 100px;
+            box-sizing: border-box;
+            overflow: auto;
+            position: relative;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            height: 100%;
+            padding: 0 20px;
+            grid-flow: --markers;
+            white-space: nowrap;
+            scroll-behavior: smooth;
+          }
+
+          li {
+            display: inline-block;
+            scroll-snap-align: center;
+
+            &::scroll-marker {
+              cursor: pointer;
+              display: inline-block;
+              width: 1em;
+              height: 1em;
+              border-radius: 100%;
+              border: 2px solid #777;
+              background: transparent content-box;
+              scroll-snap-align: center;
+
+              /* TODO: Why isn't this animation working? */
+              animation: grow-in-view linear;
+              animation-timeline: view();
+
+              &:checked {
+                background: Highlight content-box;
+                border-color: Highlight;
+              }
+            }
+          }
+        }
+
+        &::grid-flow(--markers) {
+          grid-area: markers;
+          height: 1.5em;
+          position: relative;
+          text-align: center;
+        }
+      }
+
+    </style>
+  </head>
+  <body>
+    <h1>Carousel example</h1>
+    <p>
+      This is an example of the carousel
+      with pseudo-elements from the <a href="https://css.oddbird.net/overflow/explainer/">CSS Overflow Extensions Explainer</a>
+      referesented by full html elements.
+      When you resize the carousel
+      it automatically adjusts how many pages are needed
+      to display all of the items.
+      The number of scroll markers also dynamically changes with the number of pages.
+    </p>
+    <ul class="carousel">
+      <li><figure><img src="../image/images/loc1.jpg"><figcaption>Item 1</figcaption></figure></li>
+      <li><figure><img src="../image/images/loc2.jpg"><figcaption>Item 2</figcaption></figure></li>
+      <li><figure><img src="../image/images/loc3.jpg"><figcaption>Item 3</figcaption></figure></li>
+      <li><figure><img src="../image/images/loc4.jpg"><figcaption>Item 4</figcaption></figure></li>
+      <li><figure><img src="../image/images/loc5.jpg"><figcaption>Item 5</figcaption></figure></li>
+      <li><figure><img src="../image/images/loc6.jpg"><figcaption>Item 6</figcaption></figure></li>
+      <li><figure><img src="../image/images/loc7.jpg"><figcaption>Item 7</figcaption></figure></li>
+      <li><figure><img src="../image/images/loc1.jpg"><figcaption>Item 8</figcaption></figure></li>
+    </ul>
+    <h2>The code</h2>
+    <p>
+      As the polyfill changes the DOM,
+      you need to look at the original page source
+      to see the original HTML and CSS the author writes.
+      In short, the original HTML is a simple list of items:
+    </p>
+    <pre>
+&lt;ul class="carousel"&gt;
+  &lt;li&gt;&lt;figure&gt;&lt;img src="..."&gt;&lt;figcaption&gt;Item 1&lt;/figcaption&gt;&lt;/figure&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;figure&gt;&lt;img src="..."&gt;&lt;figcaption&gt;Item 2&lt;/figcaption&gt;&lt;/figure&gt;&lt;/li&gt;
+  ...
+&lt;/ul&gt;
+</pre>
+    <p>
+      The <code>.carousel</code> element is styled as <code>display: grid</code>,
+      using the following set of CSS features
+      to achieve the overall layout and design.
+    </p>
+    <h2>Features</h2>
+    <p>This carousel makes use of polyfills of the following features:</p>
+    <h3>Flowing into grid areas</h3>
+    <p>
+      The elements within the carousel are all flowed into a common grid area
+      using the <code>grid-flow</code> property.
+      This is also used to flow the scroll markers into the bottom grid area of the carousel.
+    </p>
+    <p><a href="../../grid-flow/tabs/">Standalone grid-flow demo</a></p>
+    <h3>Scroll markers</h3>
+    <p>
+      The <code>::scroll-marker</code> pseudo-class is used to create a marker
+      which scrolls / tracks when the target element is scrolled into view.
+      These are automatically placed within the <code>::scroll-markers</code> pseudo
+      following the scroll container.
+    </p>
+    <p><a href="../../scroll-marker/">Standalone scroll-marker demo</a></p>
+  </body>
+</html>

@@ -353,6 +353,7 @@ function handleScroll() {
   const markers = this.scrollMarkerArea?.children;
   if (!markers || markers.length == 0)
     return;
+  const behavior = getComputedStyle(this.scrollMarkerArea).scrollBehavior;
   for (const marker of markers) {
     const element = marker.originatingElement;
     let position = relativeOffset(this, element);
@@ -367,6 +368,8 @@ function handleScroll() {
     let area = (intersection[2] - intersection[0]) * (intersection[3] - intersection[1]);
     if (area > 0 && area >= element.offsetWidth * element.offsetHeight * 0.5) {
       marker.checked = true;
+      // TODO: This should not scroll ancestor scrollers.
+      marker.scrollIntoView({block: 'nearest', inline: 'nearest', behavior: 'auto'});
       break;
     }
   }
