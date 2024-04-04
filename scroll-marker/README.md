@@ -8,12 +8,96 @@ or pages of items when combined with automatic fragmentation.
 For individual items, an author *can* do this manually,
 though it requires writing extra elements
 which need to be kept up to date with the items to which they scroll.
+Script also needs to be used to get the desired scrolling behavior.
 
 For dynamically content-sized pages, this can only currently be done with script which generates DOM.
 By having a way to automatically generate markers,
 many more advanced UI patterns can be solved in CSS.
 
-## Proposal
+### Requirements
+
+Scroll markers require the combination of several behaviors:
+
+1. They should scroll to the target on activation,
+2. only one of the scroll markers for a given scroller should be active (and focusable) at a time (see [roving tab-index](https://developer.mozilla.org/en-US/docs/Web/Accessibility/Keyboard-navigable_JavaScript_widgets#technique_1_roving_tabindex)),
+3. arrow keys should cycle between the other markers,
+4. the correct one is automatically activated as a result of scrolling, and
+5. The active marker should be stylable.
+
+## Proposals
+
+The following proposes how scroll markers can be achieved via elements and via pseudo-elements.
+
+### Elements
+
+There are two different proposals for how we might define scroll marker elements.
+The first tries to modify invokers and focusgroups as little as possible,
+with the hope that we could fully explain the requirements via those proposals.
+The second wraps up the requirements into a new invoker-like action.
+
+#### Invoker action and focusgroup invoke action
+
+We add a new built-in `invoke-action` (see [invokers](https://open-ui.org/components/invokers.explainer/)) `scrollTo`. When invoked, the `invokeTarget` will be scrolled to within its ancestor scrolling container. E.g.
+
+```html
+<button invoketarget="my-section" invokeaction="scrollTo">Scroll to section</button>
+...
+<section id="my-section">
+  This will be scrolled into view when you click the button
+</section>
+```
+
+Invoker actions are only [invoked](https://open-ui.org/components/invokers.explainer/#terms) on explicit activation,
+and interest actions are shown [interest](https://open-ui.org/components/interest-invokers.explainer/#terms) on focus *or* hover.
+For scroll markers, we want the action to be taken only when the selected target changes, which occurs on focus, but not on hover.
+This is very similar to an expressed intent to invoke the target.
+
+As such, we propose adding the `invoke` keyword to the `focusgroup` attribute to allow invoking the `invokeaction` on focusgroup focus changes. E.g.
+
+```html
+<style>
+  #toc {
+    position: sticky;
+    top: 0;
+  }
+</style>
+<ul class="toc" focusgroup="invoke">
+  <li><button tabindex="-1" invoketarget="section-1" invokeaction="scrollTo">Section 1</button></li>
+  <li><button tabindex="-1" invoketarget="section-2" invokeaction="scrollTo">Section 2</button></li>
+  <li><button tabindex="-1" invoketarget="section-3" invokeaction="scrollTo">Section 3</button></li>
+  <li><button tabindex="-1" invoketarget="section-4" invokeaction="scrollTo">Section 4</button></li>
+</ul>
+<section id="section-1">...</section>
+<section id="section-2">...</section>
+<section id="section-3">...</section>
+<section id="section-4">...</section>
+```
+
+Note that this example uses tabindex="-1" to apply the [roving tab index with a guaranteed tab stop](https://open-ui.org/components/focusgroup.explainer/#guaranteed-tab-stop) behavior from focusgroup.
+
+This propsoal notably does not meet requirements 4 and 5 of scroll markers.
+
+#### scroll-target attribute
+
+It is not possible to explain all of the requirements with the existing [invokers](https://open-ui.org/components/invokers.explainer/) and [focusgroup](https://open-ui.org/components/focusgroup.explainer/) proposals.
+In particular, the first section provides a means by which we could explain requirements 1-3, but not requirements 4 and 5.
+
+It may make more sense to instead add a new `scroll-target` attribute which provides 1, 2, 4, 5, and possibly 3 (though this could be left to focusgroup).
+
+For example:
+
+```html
+<div class=toc>
+  <button scroll-target="section-1">Section 1</button>
+  <button scroll-target="section-2">Section 2</button>
+  <button scroll-target="section-3">Section 3</button>
+</div>
+```
+
+### Psuedo-elements
+
+Using pseudo-elements is the *only* way to declaratively handle dynamic cases
+where the number of elements generating markers is not known (e.g. based on [fragmentation](../fragmentation/)).
 
 We create a `::scroll-markers` pseudo-element on [scroll containers](https://www.w3.org/TR/css-overflow-3/#scroll-container).
 This pseudo-element will implicitly have `contain: size`,
@@ -40,16 +124,16 @@ li::scroll-marker {
 ```
 
 The created scroll markers implement the [tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/), in particular:
-* Implicitly form a group (similar to radio buttons) with all other scroll markers for the same scroller.
-  Only one scroll marker is selected at a time.
-* Only the active marker is focusable. E.g. focus will move to the active scroll marker, past any other inactive markers.
-* When focus is on a scroll marker:
-  * Left arrow moves focus to and activates the previous scroll marker.
-  * Right arrow moves focus to and actives the next scroll marker.
+* Implicitly form a [focusgroup](https://open-ui.org/components/focusgroup.explainer/) with all other scroll markers for the same scroller.
+  The currently active scroll marker will have a persistent class applied to it.
+* Each marker has tab-index -1 ensuring that exactly one will be in the tab index per the [guaranteed tab stop](https://open-ui.org/components/focusgroup.explainer/#guaranteed-tab-stop) focusgroup behavior such that only the active marker is focusable. E.g. focus will move to the active scroll marker, past any other inactive markers.
+* When focus is on a scroll marker, per the [focusgroup attribute](https://open-ui.org/components/focusgroup.explainer/#quickstart):
+  * Left/up arrow moves focus to and activates the previous scroll marker.
+  * Right/down arrow moves focus to and activates the next scroll marker.
 
 In addition, these markers automatically respond to other scrolling operations.
 When any scrolling operation takes place,
-the first marker which is considered to be scrolled into view becomes selected.
+the first marker which is considered to be scrolled into view becomes active, but is not focused.
 
 ## Example
 
@@ -57,19 +141,9 @@ Typically, scroll markers will be used with [grid-flow](../grid-flow/) to create
 
 See an [example](https://flackr.github.io/carousel/examples/scroll-marker/) built on the polyfill.
 
-## Alternatives / extensions
+## Open questions
 
-### Allow full element markers
+### Bikeshed styling active marker
 
-Using pseudo-elements limits the types of content which can be used as a scroll marker.
-This proposal should be expanded or followed up with an element / property which allows arbitrary rich content.
-For example:
-
-```html
-<section>
-  <scrollmarker>Marker content here</scrollmarker>
-</section>
-```
-
-Pseudo-elements are however the *only* way to handle dynamic cases
-where the number of elements generating markers is not known (e.g. based on fragmentation).
+The active marker in both the pseudo-element and element cases should be stylable.
+How this is done will depend on what properties apply to it.
