@@ -1,4 +1,4 @@
-# Scroll-marker pseudo-elements
+# Scroll-marker elements and pseudo-elements
 
 ## Problem
 
