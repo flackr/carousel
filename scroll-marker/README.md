@@ -33,7 +33,7 @@ The following proposes how scroll markers can be achieved via elements and via p
 There are two different proposals for how we might define scroll marker elements.
 The first tries to modify invokers and focusgroups as little as possible,
 with the hope that we could fully explain the requirements via those proposals.
-The second wraps up the requirements into a new invoker-like action.
+The second wraps up the requirements into a new invoker-like target.
 
 #### Invoker action and focusgroup invoke action
 
@@ -77,24 +77,34 @@ Note that this example uses tabindex="-1" to apply the [roving tab index with a 
 
 This propsoal notably does not meet requirements 4 and 5 of scroll markers.
 
-#### scroll-target attribute
+#### HTML element / attribute
 
 It is not possible to explain all of the requirements with the existing [invokers](https://open-ui.org/components/invokers.explainer/) and [focusgroup](https://open-ui.org/components/focusgroup.explainer/) proposals.
 In particular, the first section provides a means by which we could explain requirements 1-3, but not requirements 4 and 5.
 
-It may make more sense to instead add a new `scroll-target` attribute which provides 1, 2, 4, 5, and possibly 3 (though this could be left to focusgroup).
+It may make more sense to instead add a new `scrolltarget` attribute or scrollmarker element which provides 1, 2, 4, 5, and possibly 3 (though this could be left to focusgroup).
 
-For example:
+E.g. using an attribute:
 
 ```html
 <div class=toc>
-  <button scroll-target="section-1">Section 1</button>
-  <button scroll-target="section-2">Section 2</button>
-  <button scroll-target="section-3">Section 3</button>
+  <button scrolltarget="section-1">Section 1</button>
+  <button scrolltarget="section-2">Section 2</button>
+  <button scrolltarget="section-3">Section 3</button>
 </div>
 ```
 
-### Psuedo-elements
+Or, using an element:
+
+```html
+<div class=toc>
+  <scrollmarker target="section-1">Section 1</scrollmarker>
+  <scrollmarker target="section-2">Section 2</scrollmarker>
+  <scrollmarker target="section-3">Section 3</scrollmarker>
+</div>
+```
+
+### Pseudo-elements
 
 Using pseudo-elements is the *only* way to declaratively handle dynamic cases
 where the number of elements generating markers is not known (e.g. based on [fragmentation](../fragmentation/)).
@@ -135,15 +145,25 @@ In addition, these markers automatically respond to other scrolling operations.
 When any scrolling operation takes place,
 the first marker which is considered to be scrolled into view becomes active, but is not focused.
 
+### The active marker
+
+Within a particular scrolling container, a single scroll marker is determined to be active.
+The active scroll marker is determined as:
+* The one which scrolling into view requires the least scrolling to bring into view.
+* In a tie, if one is an ancestor of the other, the ancestor is not considered,
+* Of the remaining elements whose scroll distance to scroll into view is the same,
+  the first in tree order is selected.
+
+When asked to [run the scroll steps](https://drafts.csswg.org/cssom-view/#document-run-the-scroll-steps)
+the active marker should be updated according to the eventual scroll location that the scroller will reach
+based on the current scrolling operation.
+
+#### Styling the active marker
+
+The active marker is considered to be toggled to an on state and can be styled using the [:checked pseudo-class](https://developer.mozilla.org/en-US/docs/Web/CSS/:checked).
+
 ## Example
 
 Typically, scroll markers will be used with [grid-flow](../grid-flow/) to create navigation points.
 
 See an [example](https://flackr.github.io/carousel/examples/scroll-marker/) built on the polyfill.
-
-## Open questions
-
-### Bikeshed styling active marker
-
-The active marker in both the pseudo-element and element cases should be stylable.
-How this is done will depend on what properties apply to it.
