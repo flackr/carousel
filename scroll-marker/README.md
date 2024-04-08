@@ -37,7 +37,7 @@ The second wraps up the requirements into a new invoker-like target.
 
 #### Invoker action and focusgroup invoke action
 
-We add a new built-in `invoke-action` (see [invokers](https://open-ui.org/components/invokers.explainer/)) `scrollTo`. When invoked, the `invokeTarget` will be scrolled to within its ancestor scrolling container. E.g.
+We add a new built-in `invokeaction` (see [invokers](https://open-ui.org/components/invokers.explainer/)) `scrollTo`. When invoked, the `invokeTarget` will be scrolled to within its ancestor scrolling container. E.g.
 
 ```html
 <button invoketarget="my-section" invokeaction="scrollTo">Scroll to section</button>
