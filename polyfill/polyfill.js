@@ -628,6 +628,10 @@ Element.prototype.originalInsertBefore = Element.prototype.insertBefore;
 Element.prototype.originalRemoveChild = Element.prototype.removeChild;
 Element.prototype.insertBefore = function(node, child) {
   this.originalInsertBefore(node, child);
+
+  if (!node || !(node instanceof Element) || !node.isConnected)
+    return;
+
   // Check if this child should be inserted somewhere else
   const cs = getComputedStyle(node);
   let flow = cs.getPropertyValue('--grid-flow');
