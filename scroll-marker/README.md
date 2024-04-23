@@ -30,61 +30,9 @@ The following proposes how scroll markers can be achieved via elements and via p
 
 ### Elements
 
-There are two different proposals for how we might define scroll marker elements.
-The first tries to modify invokers and focusgroups as little as possible,
-with the hope that we could fully explain the requirements via those proposals.
-The second wraps up the requirements into a new invoker-like target.
+We add a new `scrolltarget` attribute to buttons which applies all of the requirements above.
 
-#### Invoker action and focusgroup invoke action
-
-We add a new built-in `invoke-action` (see [invokers](https://open-ui.org/components/invokers.explainer/)) `scrollTo`. When invoked, the `invokeTarget` will be scrolled to within its ancestor scrolling container. E.g.
-
-```html
-<button invoketarget="my-section" invokeaction="scrollTo">Scroll to section</button>
-...
-<section id="my-section">
-  This will be scrolled into view when you click the button
-</section>
-```
-
-Invoker actions are only [invoked](https://open-ui.org/components/invokers.explainer/#terms) on explicit activation,
-and interest actions are shown [interest](https://open-ui.org/components/interest-invokers.explainer/#terms) on focus *or* hover.
-For scroll markers, we want the action to be taken only when the selected target changes, which occurs on focus, but not on hover.
-This is very similar to an expressed intent to invoke the target.
-
-As such, we propose adding the `invoke` keyword to the `focusgroup` attribute to allow invoking the `invokeaction` on focusgroup focus changes. E.g.
-
-```html
-<style>
-  #toc {
-    position: sticky;
-    top: 0;
-  }
-</style>
-<ul class="toc" focusgroup="invoke">
-  <li><button tabindex="-1" invoketarget="section-1" invokeaction="scrollTo">Section 1</button></li>
-  <li><button tabindex="-1" invoketarget="section-2" invokeaction="scrollTo">Section 2</button></li>
-  <li><button tabindex="-1" invoketarget="section-3" invokeaction="scrollTo">Section 3</button></li>
-  <li><button tabindex="-1" invoketarget="section-4" invokeaction="scrollTo">Section 4</button></li>
-</ul>
-<section id="section-1">...</section>
-<section id="section-2">...</section>
-<section id="section-3">...</section>
-<section id="section-4">...</section>
-```
-
-Note that this example uses tabindex="-1" to apply the [roving tab index with a guaranteed tab stop](https://open-ui.org/components/focusgroup.explainer/#guaranteed-tab-stop) behavior from focusgroup.
-
-This propsoal notably does not meet requirements 4 and 5 of scroll markers.
-
-#### HTML element / attribute
-
-It is not possible to explain all of the requirements with the existing [invokers](https://open-ui.org/components/invokers.explainer/) and [focusgroup](https://open-ui.org/components/focusgroup.explainer/) proposals.
-In particular, the first section provides a means by which we could explain requirements 1-3, but not requirements 4 and 5.
-
-It may make more sense to instead add a new `scrolltarget` attribute or scrollmarker element which provides 1, 2, 4, 5, and possibly 3 (though this could be left to focusgroup).
-
-E.g. using an attribute:
+E.g.
 
 ```html
 <div class=toc>
@@ -94,15 +42,7 @@ E.g. using an attribute:
 </div>
 ```
 
-Or, using an element:
-
-```html
-<div class=toc>
-  <scrollmarker target="section-1">Section 1</scrollmarker>
-  <scrollmarker target="section-2">Section 2</scrollmarker>
-  <scrollmarker target="section-3">Section 3</scrollmarker>
-</div>
-```
+Elements with the `scrolltarget` attribute set implicitly form a group with all markers targeting the same scrolling container.
 
 ### Pseudo-elements
 
@@ -167,3 +107,47 @@ The active marker is considered to be toggled to an on state and can be styled u
 Typically, scroll markers will be used with [grid-flow](../grid-flow/) to create navigation points.
 
 See an [example](https://flackr.github.io/carousel/examples/scroll-marker/) built on the polyfill.
+
+## Alternatives considered
+
+#### Invoker action and focusgroup invoke action
+
+We could add a new built-in `invoke-action` (see [invokers](https://open-ui.org/components/invokers.explainer/)) `scrollTo`. When invoked, the `invokeTarget` will be scrolled to within its ancestor scrolling container. E.g.
+
+```html
+<button invoketarget="my-section" invokeaction="scrollTo">Scroll to section</button>
+...
+<section id="my-section">
+  This will be scrolled into view when you click the button
+</section>
+```
+
+Invoker actions are only [invoked](https://open-ui.org/components/invokers.explainer/#terms) on explicit activation,
+and interest actions are shown [interest](https://open-ui.org/components/interest-invokers.explainer/#terms) on focus *or* hover.
+For scroll markers, we want the action to be taken only when the selected target changes, which occurs on focus, but not on hover.
+This is very similar to an expressed intent to invoke the target.
+
+As such, we propose adding the `invoke` keyword to the `focusgroup` attribute to allow invoking the `invokeaction` on focusgroup focus changes. E.g.
+
+```html
+<style>
+  #toc {
+    position: sticky;
+    top: 0;
+  }
+</style>
+<ul class="toc" focusgroup="invoke">
+  <li><button tabindex="-1" invoketarget="section-1" invokeaction="scrollTo">Section 1</button></li>
+  <li><button tabindex="-1" invoketarget="section-2" invokeaction="scrollTo">Section 2</button></li>
+  <li><button tabindex="-1" invoketarget="section-3" invokeaction="scrollTo">Section 3</button></li>
+  <li><button tabindex="-1" invoketarget="section-4" invokeaction="scrollTo">Section 4</button></li>
+</ul>
+<section id="section-1">...</section>
+<section id="section-2">...</section>
+<section id="section-3">...</section>
+<section id="section-4">...</section>
+```
+
+Note that this example uses tabindex="-1" to apply the [roving tab index with a guaranteed tab stop](https://open-ui.org/components/focusgroup.explainer/#guaranteed-tab-stop) behavior from focusgroup.
+
+This proposal notably does not meet requirements 4 and 5 of scroll markers.
