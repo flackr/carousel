@@ -42,7 +42,7 @@ E.g.
 </div>
 ```
 
-Elements with the `scrolltarget` attribute set implicitly form a group with all markers targeting the same scrolling container.
+The `scrolltarget` attribute sets the `scrollTargetElement` of the button to the element with the associated id.
 
 ### Pseudo-elements
 
@@ -51,14 +51,15 @@ where the number of elements generating markers is not known (e.g. based on [fra
 
 We create a `::scroll-markers` pseudo-element on [scroll containers](https://www.w3.org/TR/css-overflow-3/#scroll-container).
 This pseudo-element will implicitly have `contain: size`,
-and be positioned after the `:after` pseudo-element.
+and is either immediately before or after the scroll container depending on the value of the `scroll-markers` property.
 
 The `::scroll-marker` pseudo-element will create a focusable marker which when activated will scroll the element into view.
-This pseudo-element will be flowed into the `::scroll-markers` pseudo-element of its containing scroll container.
+This pseudo-element will be flowed into the `::scroll-markers` pseudo-element of its containing scroll container. It behaves as a button with a scrollTargetElement set to the psuedo-element's owning element.
 
 ```css
 ul {
   overflow: auto;
+  scroll-markers: after;
 }
 ul::scroll-markers {
   display: flex;
@@ -73,17 +74,25 @@ li::scroll-marker {
 }
 ```
 
-The created scroll markers implement the [tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/), in particular:
+### scrollTargetElement
+
+Scroll markers (buttons with a `scrollTargetElement`) implement the [tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/), in particular:
 * Implicitly form a [focusgroup](https://open-ui.org/components/focusgroup.explainer/) with all other scroll markers for the same scroller.
-  The currently active scroll marker will have a persistent class applied to it.
-* Each marker has tab-index -1 ensuring that exactly one will be in the tab index per the [guaranteed tab stop](https://open-ui.org/components/focusgroup.explainer/#guaranteed-tab-stop) focusgroup behavior such that only the active marker is focusable. E.g. focus will move to the active scroll marker, past any other inactive markers.
-* When focus is on a scroll marker, per the [focusgroup attribute](https://open-ui.org/components/focusgroup.explainer/#quickstart):
+  The currently active scroll marker will have a persistent :checked psuedo-class applied to it.
+* Only the active marker will be in the tab index following the [roving tabindex](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_roving_tabindex) behavior.
+* When focus is on a scroll marker, we follow the [radio group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/) for interaction, i.e.:
   * Left/up arrow moves focus to and activates the previous scroll marker.
   * Right/down arrow moves focus to and activates the next scroll marker.
 
-In addition, these markers automatically respond to other scrolling operations.
-When any scrolling operation takes place,
-the first marker which is considered to be scrolled into view becomes active, but is not focused.
+In addition,
+1.  these markers automatically respond to other scrolling operations.
+    When any scrolling operation takes place,
+    the first marker which is considered to be scrolled into view becomes active, but is not focused.
+
+2.  Activation of a marker (e.g. clicking, pressing space / enter) moves focus to the `scrollTargetElement`.
+    This allows subsequent tab navigation within the targeted component,
+    consistent with following an anchor link navigation,
+    and their common use for [skip links](https://www.w3.org/TR/2016/NOTE-WCAG20-TECHS-20161007/G1).
 
 ### The active marker
 
@@ -104,7 +113,7 @@ The active marker is considered to be toggled to an on state and can be styled u
 
 ## Example
 
-Typically, scroll markers will be used with [grid-flow](../grid-flow/) to create navigation points.
+Scroll markers and the scroll-markers area can be used to create navigation points.
 
 See an [example](https://flackr.github.io/carousel/examples/scroll-marker/) built on the polyfill.
 
