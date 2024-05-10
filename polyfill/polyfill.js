@@ -173,14 +173,14 @@ function isOffsetAncestor(anc, child) {
   while (child) {
     if (child == anc)
       return true;
-    child = child.offsetParent;
+    child = child.offsetParent || window;
   }
   return false;
 }
 
 function commonOffsetParent(e1, e2) {
   while (!isOffsetAncestor(e1, e2)) {
-    e1 = e1.offsetParent;
+    e1 = e1.offsetParent || window;
   }
   return e1;
 }
@@ -194,12 +194,12 @@ function relativeOffset(e1, e2) {
   while (e1 != ancestor) {
     offset.offsetLeft -= e1.offsetLeft;
     offset.offsetTop -= e1.offsetTop;
-    e1 = e1.offsetParent;
+    e1 = e1.offsetParent || window;
   }
   while (e2 != ancestor) {
     offset.offsetLeft += e2.offsetLeft;
     offset.offsetTop += e2.offsetTop;
-    e2 = e2.offsetParent;
+    e2 = e2.offsetParent || window;
   }
   return offset;
 }
@@ -313,6 +313,8 @@ function updateSelectors(selector, forPseudo) {
       // and target that particular subtree.
       replace(/.*[^ >+,]*::scroll-marker$/g, forPseudo?'scroll-markers>.scroll-marker::before':'scroll-markers>.scroll-marker').
       replace(/.*[^ >+,]*::scroll-marker:checked$/g, forPseudo?'scroll-markers>.scroll-marker:checked::before':'scroll-markers>.scroll-marker:checked').
+      replace(/.*[^ >+,]*::scroll-marker:focus$/g, forPseudo?'scroll-markers>.scroll-marker:focus::before':'scroll-markers>.scroll-marker:focus').
+      replace(/:checked/g, ':is(.checked,:checked)').
       replace(/.*[^ >+,]*::scroll-markers$/g, 'scroll-markers');
 }
 
@@ -350,26 +352,30 @@ let markerVars = new Set();
 let flowSelectors = new Set();
 
 function handleScroll() {
-  const markers = this.scrollMarkerArea?.children;
+  const scrollerElement = this == window ? document.documentElement : this;
+  const markers = scrollerElement.scrollMarkers;
   if (!markers || markers.length == 0)
     return;
-  const behavior = getComputedStyle(this.scrollMarkerArea).scrollBehavior;
   for (const marker of markers) {
-    const element = marker.originatingElement;
+    const element = marker.scrollTargetElement;
+    if (!element) continue;
     let position = relativeOffset(this, element);
-    position.offsetLeft -= this.scrollLeft;
-    position.offsetTop -= this.scrollTop;
+    position.offsetLeft -= scrollerElement.scrollLeft;
+    position.offsetTop -= scrollerElement.scrollTop;
     // TODO: Consider snap-align, scroll-margin and scroll-padding.
     let intersection = [
       Math.max(0, position.offsetLeft), Math.max(0, position.offsetTop),
-      Math.min(position.offsetLeft + element.offsetWidth, this.clientWidth),
-      Math.min(position.offsetTop + element.offsetHeight, this.clientHeight)
+      Math.min(position.offsetLeft + element.offsetWidth, scrollerElement.clientWidth),
+      Math.min(position.offsetTop + element.offsetHeight, scrollerElement.clientHeight)
     ];
     let area = (intersection[2] - intersection[0]) * (intersection[3] - intersection[1]);
     if (area > 0 && area >= element.offsetWidth * element.offsetHeight * 0.5) {
-      marker.checked = true;
-      // TODO: This should not scroll ancestor scrollers.
-      marker.scrollIntoView({block: 'nearest', inline: 'nearest', behavior: 'auto'});
+      setActiveMarker(marker, false);
+      const markerScroller = ancestorScroller(marker);
+      if (markerScroller != document.scrollingElement && markerScroller != scrollerElement) {
+        // TODO: This should not scroll ancestor scrollers.
+        marker.scrollIntoView({block: 'nearest', inline: 'nearest', behavior: 'auto'});
+      }
       break;
     }
   }
@@ -379,19 +385,20 @@ function resetHandleScroll() {
   this.onscroll = handleScroll;
 }
 
-function addMarker(elem, usedProps) {
+function addPseudoMarker(elem, usedProps) {
   if (elem.markerElement) {
     return;
   }
   const scroller = eventTarget(ancestorScroller(elem));
   if (!scroller.scrollMarkerArea)
     return;
-  let marker = document.createElement('input');
+  let marker = document.createElement('button');
   elem.pseudoElements = elem.pseudoElements || [];
   elem.pseudoElements.push(marker);
   elem.markerElement = marker;
   marker.originatingElement = elem;
-  marker.className = 'scroll-marker';
+  marker.scrollTargetElement = elem;
+
   // Copy attributes from originating element so attr functions work.
   const EXCLUDED = ['name', 'type', 'class', 'style'];
   for (let name of elem.getAttributeNames()) {
@@ -404,28 +411,9 @@ function addMarker(elem, usedProps) {
   for (let name of markerVars) {
     marker.style.setProperty(name, cs.getPropertyValue(name));
   }
-  marker.setAttribute('type', 'radio');
-  // TODO: Name radio buttons something unique per scrollable area.
-  marker.setAttribute('name', 'scroll-marker');
-  marker.addEventListener('input', () => {
-    const scroller = eventTarget(ancestorScroller(elem));
-    let target = relativeOffset(scroller, elem);
-    target.offsetLeft = Math.max(0, Math.min(scroller.scrollWidth - scroller.clientWidth, target.offsetLeft));
-    target.offsetTop = Math.max(0, Math.min(scroller.scrollHeight - scroller.clientHeight, target.offsetTop));
-    if (target.offsetLeft != scroller.scrollLeft || target.offsetTop != scroller.scrollTop) {
-      scroller.onscroll = undefined;
-      scroller.scrollTo({
-        top: target.offsetTop,
-        left: target.offsetLeft,
-        behavior: 'smooth'
-      });
-    }
-  });
+
+  marker.className = 'scroll-marker';
   scroller.scrollMarkerArea.appendChild(marker);
-  // TODO: Sort markers by DOM order.
-  scroller.onscroll = handleScroll;
-  scroller.onscrollend = resetHandleScroll;
-  handleScroll.apply(scroller);
 }
 
 function update() {
@@ -440,6 +428,10 @@ function update() {
 .scroll-marker {
   appearance: none;
   display: block;
+  /* button resets */
+  border: 0;
+  padding: 0;
+  background: none;
 }
 scroll-markers {
   contain: size;
@@ -615,7 +607,11 @@ scroll-markers {
   // Process elements with scroll-markers
   let markers = [];
   for (let elem of getElems(markerSelectors)) {
-    addMarker(elem);
+    addPseudoMarker(elem);
+  }
+  for (let elem of document.querySelectorAll('[scrolltarget]')) {
+    let target = document.getElementById(elem.getAttribute('scrolltarget'));
+    elem.scrollTargetElement = target;
   }
 
   // Process fragmented elements.
@@ -623,6 +619,121 @@ scroll-markers {
     new FragmentNode(elem);
   }
 }
+
+const SCROLL_MARKER_HANDLERS = {
+  'focus': function(evt) {
+    const elem = this.scrollTargetElement;
+    const scroller = eventTarget(ancestorScroller(elem));
+    setActiveMarker(this, true);
+  },
+  'click': function(evt) {
+    this.scrollTargetElement.focus();
+  },
+  'keydown': function(evt) {
+    const DIRS = {
+      'ArrowUp': -1,
+      'ArrowLeft': -1,
+      'ArrowDown': 1,
+      'ArrowRight': 1,
+    };
+    const dir = DIRS[evt.code];
+    if (!dir)
+      return;
+    const elem = this.scrollTargetElement;
+    const scrollerElement = ancestorScroller(elem);
+    const markers = scrollerElement.scrollMarkers;
+    let index = markers.indexOf(this);
+    if (index == -1)
+      return;
+    evt.preventDefault();
+    index = (markers.length + index + dir) % markers.length;
+    markers[index].focus();
+  }
+};
+
+function addScrollMarker(marker) {
+  const elem = marker.scrollTargetElement;
+  if (!elem || !elem.isConnected)
+    return;
+  const scrollerElement = ancestorScroller(elem)
+  const scroller = eventTarget(scrollerElement);
+  if (scrollerElement.scrollMarkers && scrollerElement.scrollMarkers.indexOf(marker) != -1) {
+    return;
+  }
+  elem.setAttribute('tabindex', -1);
+
+  for (let eventType in SCROLL_MARKER_HANDLERS) {
+    marker.addEventListener(eventType, SCROLL_MARKER_HANDLERS[eventType]);
+  }
+  // TODO: Sort markers by DOM order.
+  scrollerElement.scrollMarkers = scrollerElement.scrollMarkers || [];
+  scrollerElement.scrollMarkers.push(marker);
+  scrollerElement.scrollMarkers = scrollerElement.scrollMarkers.sort((a, b) => {
+    // https://developer.mozilla.org/en-US/docs/Web/API/Node/compareDocumentPosition
+    return a.compareDocumentPosition(b) == 2; // DOCUMENT_POSITION_PRECEDING
+  });
+  scroller.onscroll = handleScroll;
+  scroller.onscrollend = resetHandleScroll;
+  handleScroll.apply(scroller);
+}
+
+function removeScrollMarker(marker) {
+  const elem = marker.scrollTargetElement;
+  const scrollerElement = ancestorScroller(elem)
+  const scroller = eventTarget(scrollerElement);
+  if (!elem || !elem.isConnected)
+    return;
+  elem.removeAttribute('tabindex');
+  for (let eventType in SCROLL_MARKER_HANDLERS) {
+    marker.removeEventListener(eventType, SCROLL_MARKER_HANDLERS[eventType]);
+  }
+  scrollerElement.scrollMarkers.splice(scrollerElement.scrollMarkers.indexOf(marker), 1);
+}
+
+function setActiveMarker(marker, scrollTo) {
+  const elem = marker.scrollTargetElement;
+  if (!elem)
+    return;
+  const scrollerElement = ancestorScroller(elem);
+  const scroller = eventTarget(scrollerElement);
+  const markers = scrollerElement.scrollMarkers;
+  if (scrollTo) {
+    let target = relativeOffset(scroller, elem);
+    const scrollerElement = scroller == window ? document.documentElement : scroller;
+    target.offsetLeft = Math.max(0, Math.min(scrollerElement.scrollWidth - scrollerElement.clientWidth, target.offsetLeft));
+    target.offsetTop = Math.max(0, Math.min(scrollerElement.scrollHeight - scrollerElement.clientHeight, target.offsetTop));
+    if (target.offsetLeft != scrollerElement.scrollLeft || target.offsetTop != scrollerElement.scrollTop) {
+      scroller.onscroll = undefined;
+      scroller.scrollTo({
+        top: target.offsetTop,
+        left: target.offsetLeft,
+        behavior: 'smooth'
+      });
+    }
+  }
+  for (const m of markers) {
+    if (m == marker) continue;
+    m.checked = false;
+    m.classList.remove('checked');
+    m.setAttribute('tabindex', -1);
+  }
+  marker.checked = true;
+  marker.classList.add('checked');
+  marker.setAttribute('tabindex', 0);
+}
+
+Object.defineProperty(Element.prototype, 'scrollTargetElement', {
+  configurable: true, enumerable: true,
+  get: function() { return this.__scrollTargetElement; },
+  set: function(y) {
+    removeScrollMarker(this);
+    this.__scrollTargetElement  = y;
+    addScrollMarker(this);
+  }
+});
+Object.defineProperty(Element.prototype, '__scrollTargetElement', {
+  configurable: true, writable: true, enumerable: true, value :""
+});
 
 Element.prototype.originalInsertBefore = Element.prototype.insertBefore;
 Element.prototype.originalRemoveChild = Element.prototype.removeChild;
@@ -648,13 +759,15 @@ Element.prototype.insertBefore = function(node, child) {
   }
   let marker = cs.getPropertyValue('--scroll-marker');
   if (marker == 'yes') {
-    addMarker(node);
+    addPseudoMarker(node);
   }
+  addScrollMarker(node);
 }
 Element.prototype.appendChild = function(node) {
   this.insertBefore(node, null);
 }
 Element.prototype.removeChild = function(node) {
+  removeScrollMarker(node);
   // Remove pseudo elements generated by this element, e.g. the scroll marker for the fragment.
   if (node.pseudoElements) {
     for (let pseudo of node.pseudoElements) {

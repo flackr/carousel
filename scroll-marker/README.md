@@ -115,7 +115,9 @@ The active marker is considered to be toggled to an on state and can be styled u
 
 Scroll markers and the scroll-markers area can be used to create navigation points.
 
-See an [example](https://flackr.github.io/carousel/examples/scroll-marker/) built on the polyfill.
+Examples build on polyfill:
+* [Using pseudo-elements to dynamically construct legend](https://flackr.github.io/carousel/examples/scroll-marker/)
+* [Using scrolltarget for table of contents](https://flackr.github.io/carousel/examples/scroll-marker/scrolltarget/)
 
 ## Alternatives considered
 

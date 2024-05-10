@@ -71,12 +71,14 @@
               cursor: pointer;
               width: 1em;
               height: 1em;
+              margin: 3px;
               border-radius: 100%;
               border: 2px solid #777;
               background: transparent content-box;
-
               &:checked {
-                background: Highlight content-box;
+                background: SelectedItem content-box;
+              }
+              &:focus {
                 border-color: Highlight;
               }
             }
@@ -104,14 +106,14 @@
       The number of scroll markers also dynamically changes with the number of pages.
     </p>
     <ul class="carousel">
-      <li><figure><img src="images/loc1.jpg"><figcaption>Item 1</figcaption></figure></li>
-      <li><figure><img src="images/loc2.jpg"><figcaption>Item 2</figcaption></figure></li>
-      <li><figure><img src="images/loc3.jpg"><figcaption>Item 3</figcaption></figure></li>
-      <li><figure><img src="images/loc4.jpg"><figcaption>Item 4</figcaption></figure></li>
-      <li><figure><img src="images/loc5.jpg"><figcaption>Item 5</figcaption></figure></li>
-      <li><figure><img src="images/loc6.jpg"><figcaption>Item 6</figcaption></figure></li>
-      <li><figure><img src="images/loc7.jpg"><figcaption>Item 7</figcaption></figure></li>
-      <li><figure><img src="images/loc1.jpg"><figcaption>Item 8</figcaption></figure></li>
+      <li tabindex="0"><figure><img src="images/loc1.jpg"><figcaption>Item 1</figcaption></figure></li>
+      <li tabindex="0"><figure><img src="images/loc2.jpg"><figcaption>Item 2</figcaption></figure></li>
+      <li tabindex="0"><figure><img src="images/loc3.jpg"><figcaption>Item 3</figcaption></figure></li>
+      <li tabindex="0"><figure><img src="images/loc4.jpg"><figcaption>Item 4</figcaption></figure></li>
+      <li tabindex="0"><figure><img src="images/loc5.jpg"><figcaption>Item 5</figcaption></figure></li>
+      <li tabindex="0"><figure><img src="images/loc6.jpg"><figcaption>Item 6</figcaption></figure></li>
+      <li tabindex="0"><figure><img src="images/loc7.jpg"><figcaption>Item 7</figcaption></figure></li>
+      <li tabindex="0"><figure><img src="images/loc1.jpg"><figcaption>Item 8</figcaption></figure></li>
     </ul>
     <h2>The code</h2>
     <p>

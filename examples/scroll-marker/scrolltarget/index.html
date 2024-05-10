@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>scrolltarget demo</title>
+    <script src="../../../polyfill/polyfill.js"></script>
+    <style>
+      body {
+        padding-left: 200px;
+      }
+      .toc {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        box-sizing: border-box;
+        padding: 8px;
+        width: 180px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 2px solid black;
+        border-radius: 4px;
+      }
+      section {
+        height: 100vh;
+      }
+      li {
+        cursor: pointer;
+      }
+      li:checked {
+        color: blue;
+        list-style-type: '👉';
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toc">
+      <p>Table of contents:</p>
+      <ul>
+        <li scrolltarget="s1">Section 1</li>
+        <li scrolltarget="s2">Section 2</li>
+        <li scrolltarget="s3">Section 3</li>
+      </ul>
+    </div>
+    <section id="s1">
+      This is an example of how you can use the <a href="https://github.com/flackr/carousel/tree/main/scroll-marker#elements">scrolltarget</a> attribute
+      to create navigation points which track and take you to various points in the document.
+    </section>
+    <section id="s2">
+      For a given scrolling box, one marker is determined to be the <a href="https://github.com/flackr/carousel/tree/main/scroll-marker#the-active-marker">active marker</a>.
+    </section>
+    <section id="s3">
+      When asked to <a href="https://drafts.csswg.org/cssom-view/#document-run-the-scroll-steps">run the scroll steps</a> the active marker should be updated according to the eventual scroll location that the scroller will reach based on the current scrolling operation.
+    </section>
+  </body>
+</html>
