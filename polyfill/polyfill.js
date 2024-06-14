@@ -693,7 +693,6 @@ function removeScrollMarker(marker) {
   const scroller = eventTarget(scrollerElement);
   if (!elem || !elem.isConnected)
     return;
-  elem.removeAttribute('tabindex');
   for (let eventType in SCROLL_MARKER_HANDLERS) {
     marker.removeEventListener(eventType, SCROLL_MARKER_HANDLERS[eventType]);
   }
