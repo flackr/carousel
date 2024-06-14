@@ -622,12 +622,13 @@ scroll-markers {
 
 const SCROLL_MARKER_HANDLERS = {
   'focus': function(evt) {
+    this.didActivate = false;
     const elem = this.scrollTargetElement;
     const scroller = eventTarget(ancestorScroller(elem));
     setActiveMarker(this, true);
   },
   'click': function(evt) {
-    this.scrollTargetElement.focus();
+    this.didActivate = true;
   },
   'keydown': function(evt) {
     const DIRS = {
@@ -636,6 +637,15 @@ const SCROLL_MARKER_HANDLERS = {
       'ArrowDown': 1,
       'ArrowRight': 1,
     };
+    if (evt.code == 'Tab') {
+      if (this.didActivate) {
+        // Move focus to the scroll target when tabbing away to tab from the location just scrolled to.
+        const elem = this.scrollTargetElement;
+        this.blur();
+        elem.scrollIntoView();
+      }
+      return;
+    }
     const dir = DIRS[evt.code];
     if (!dir)
       return;
@@ -648,6 +658,7 @@ const SCROLL_MARKER_HANDLERS = {
     evt.preventDefault();
     index = (markers.length + index + dir) % markers.length;
     markers[index].focus();
+    markers[index].didActivate = true;
   }
 };
 
@@ -660,7 +671,6 @@ function addScrollMarker(marker) {
   if (scrollerElement.scrollMarkers && scrollerElement.scrollMarkers.indexOf(marker) != -1) {
     return;
   }
-  elem.setAttribute('tabindex', -1);
 
   for (let eventType in SCROLL_MARKER_HANDLERS) {
     marker.addEventListener(eventType, SCROLL_MARKER_HANDLERS[eventType]);
