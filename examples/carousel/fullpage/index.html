@@ -59,7 +59,6 @@
             scrollbar-width: none;
             height: 100%;
             padding: 0 20px;
-            scroll-padding: 0 20px;
             grid-flow: --markers;
             white-space: nowrap;
             scroll-behavior: smooth;
@@ -76,6 +75,8 @@
               height: 1em;
               border-radius: 100%;
               border: 2px solid #777;
+              /* TODO: This should be scroll-padding on the scroller. */
+              scroll-margin: 0 50px;
               background: transparent content-box;
               scroll-snap-align: center;
 
