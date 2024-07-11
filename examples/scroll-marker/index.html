@@ -11,6 +11,7 @@
             "side main";
         grid-template-columns: auto 1fr;
         overflow: hidden;
+        height: 60vh;
         resize: both;
         counter-reset: section;
       }
@@ -22,7 +23,7 @@
         scroll-behavior: smooth;
         position: relative;
       }
-      .scroller::scroll-markers {
+      .scroller::scroll-marker-group {
         grid-area: side;
         border: 2px solid blue;
         width: 120px;

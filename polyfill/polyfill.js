@@ -169,6 +169,19 @@ function isAncestor(anc, child) {
   return child == anc;
 }
 
+function findAncestor(child, fn) {
+  while (child && !fn(child)) {
+    child = child.parentElement;
+  }
+  return child;
+}
+
+function ancestorFocusGroup(child) {
+  return findAncestor(child.parentElement, (elem) => {
+    return elem.hasAttribute('focusgroup');
+  });
+}
+
 function isOffsetAncestor(anc, child) {
   while (child) {
     if (child == anc)
@@ -309,13 +322,13 @@ function updateSelectors(selector, forPseudo) {
       replaceAll('::fragment', '>fragment').
       replace(/::grid-flow\(([^)]*)\)/g, '>.grid-flow-\$1').
       replace(/[^ >+,]*::scroll-(left|right|up|down)-button/g, forPseudo?'.scroll-\$1-button::before':'.scroll-\$1-button').
-      // TODO: Track where the corresponding scroll-markers are flowed into,
+      // TODO: Track where the corresponding scroll-marker-group are flowed into,
       // and target that particular subtree.
-      replace(/.*[^ >+,]*::scroll-marker$/g, forPseudo?'scroll-markers>.scroll-marker::before':'scroll-markers>.scroll-marker').
-      replace(/.*[^ >+,]*::scroll-marker:checked$/g, forPseudo?'scroll-markers>.scroll-marker:checked::before':'scroll-markers>.scroll-marker:checked').
-      replace(/.*[^ >+,]*::scroll-marker:focus$/g, forPseudo?'scroll-markers>.scroll-marker:focus::before':'scroll-markers>.scroll-marker:focus').
+      replace(/.*[^ >+,]*::scroll-marker$/g, forPseudo?'scroll-marker-group>.scroll-marker::before':'scroll-marker-group>.scroll-marker').
+      replace(/.*[^ >+,]*::scroll-marker:checked$/g, forPseudo?'scroll-marker-group>.scroll-marker:checked::before':'scroll-marker-group>.scroll-marker:checked').
+      replace(/.*[^ >+,]*::scroll-marker:focus$/g, forPseudo?'scroll-marker-group>.scroll-marker:focus::before':'scroll-marker-group>.scroll-marker:focus').
       replace(/:checked/g, ':is(.checked,:checked)').
-      replace(/.*[^ >+,]*::scroll-markers$/g, 'scroll-markers');
+      replace(/.*[^ >+,]*::scroll-marker-group$/g, 'scroll-marker-group');
 }
 
 function getElems(selectors) {
@@ -356,28 +369,45 @@ function handleScroll() {
   const markers = scrollerElement.scrollMarkers;
   if (!markers || markers.length == 0)
     return;
+  const ALIGN_PORTION = {
+    'start': 0,
+    'center': 0.5,
+    'end': 1
+  };
+  const SLOP = 1;
+  let selected = markers[0];
   for (const marker of markers) {
     const element = marker.scrollTargetElement;
     if (!element) continue;
     let position = relativeOffset(this, element);
+
+    // Determine target scroll position taking into account snapping:
+    // TODO: Consider scroll-margin and scroll-padding.
+    const snapAlign = getComputedStyle(element).scrollSnapAlign.split(' ');
+    if (snapAlign.length == 1)
+      snapAlign.push(snapAlign[0]);
+    if (snapAlign[0] != 'none') {
+      position.offsetTop -= ALIGN_PORTION[snapAlign[0]] * Math.max(0, scrollerElement.clientHeight - element.clientHeight);
+    }
+    if (snapAlign[1] != 'none') {
+      position.offsetLeft -= ALIGN_PORTION[snapAlign[1]] * Math.max(0, scrollerElement.clientWidth - element.clientWidth);
+    }
+
+    // Limit offsetTop and offsetLeft by how far we could scroll
+    position.offsetLeft = Math.min(position.offsetLeft, scrollerElement.scrollWidth - scrollerElement.clientWidth);
+    position.offsetTop = Math.min(position.offsetTop, scrollerElement.scrollHeight - scrollerElement.clientHeight);
     position.offsetLeft -= scrollerElement.scrollLeft;
     position.offsetTop -= scrollerElement.scrollTop;
-    // TODO: Consider snap-align, scroll-margin and scroll-padding.
-    let intersection = [
-      Math.max(0, position.offsetLeft), Math.max(0, position.offsetTop),
-      Math.min(position.offsetLeft + element.offsetWidth, scrollerElement.clientWidth),
-      Math.min(position.offsetTop + element.offsetHeight, scrollerElement.clientHeight)
-    ];
-    let area = (intersection[2] - intersection[0]) * (intersection[3] - intersection[1]);
-    if (area > 0 && area >= element.offsetWidth * element.offsetHeight * 0.5) {
-      setActiveMarker(marker, false);
-      const markerScroller = ancestorScroller(marker);
-      if (markerScroller != document.scrollingElement && markerScroller != scrollerElement) {
-        // TODO: This should not scroll ancestor scrollers.
-        marker.scrollIntoView({block: 'nearest', inline: 'nearest', behavior: 'auto'});
-      }
-      break;
+    if (position.offsetLeft > SLOP || position.offsetTop > SLOP) {
+      continue;
     }
+    selected = marker;
+  }
+  setActiveMarker(selected);
+  const markerScroller = ancestorScroller(selected);
+  if (markerScroller != document.scrollingElement && markerScroller != scrollerElement) {
+    // TODO: This should not scroll ancestor scrollers.
+    selected.scrollIntoView({block: 'nearest', inline: 'nearest', behavior: 'auto'});
   }
 }
 
@@ -392,7 +422,7 @@ function addPseudoMarker(elem, usedProps) {
   const scroller = eventTarget(ancestorScroller(elem));
   if (!scroller.scrollMarkerArea)
     return;
-  let marker = document.createElement('button');
+  let marker = document.createElement('a');
   elem.pseudoElements = elem.pseudoElements || [];
   elem.pseudoElements.push(marker);
   elem.markerElement = marker;
@@ -433,7 +463,7 @@ function update() {
   padding: 0;
   background: none;
 }
-scroll-markers {
+scroll-marker-group {
   contain: size;
   display: block;
 }
@@ -487,7 +517,7 @@ scroll-markers {
       flowContainers[selector] = flowContainers[selector] || new Set();
       flowContainers[selector].add(name);
     }
-    let markers = /^(.*)::scroll-markers$/.exec(block.selector);
+    let markers = /^(.*)::scroll-marker-group$/.exec(block.selector);
     if (markers) {
       const selector = updateSelectors(markers[1]);
       markerAreaSelectors.add(selector);
@@ -549,7 +579,8 @@ scroll-markers {
   for (let elem of getElems(markerAreaSelectors)) {
     if (elem.scrollMarkerArea)
       continue;
-    elem.scrollMarkerArea = document.createElement('scroll-markers');
+    elem.scrollMarkerArea = document.createElement('scroll-marker-group');
+    elem.scrollMarkerArea.setAttribute('focusgroup', '');
     elem.parentElement.insertBefore(elem.scrollMarkerArea, elem.nextElementSibling);
   }
 
@@ -604,13 +635,13 @@ scroll-markers {
     }
   }
   
-  // Process elements with scroll-markers
+  // Process elements with scroll-marker-group
   let markers = [];
   for (let elem of getElems(markerSelectors)) {
     addPseudoMarker(elem);
   }
-  for (let elem of document.querySelectorAll('[scrolltarget]')) {
-    let target = document.getElementById(elem.getAttribute('scrolltarget'));
+  for (let elem of document.querySelectorAll('a[href^="#"]')) {
+    let target = document.getElementById(elem.getAttribute('href').substring(1));
     elem.scrollTargetElement = target;
   }
 
@@ -720,15 +751,22 @@ function setActiveMarker(marker, scrollTo) {
       });
     }
   }
+  const focusGroup = ancestorFocusGroup(marker);
   for (const m of markers) {
     if (m == marker) continue;
     m.checked = false;
     m.classList.remove('checked');
-    m.setAttribute('tabindex', -1);
+    m.setAttribute('aria-selected', false);
+    if (focusGroup && isAncestor(focusGroup, marker)) {
+      m.setAttribute('tabindex', -1);
+    }
   }
   marker.checked = true;
   marker.classList.add('checked');
-  marker.setAttribute('tabindex', 0);
+  marker.setAttribute('aria-selected', true);
+  if (focusGroup) {
+    marker.setAttribute('tabindex', 0);
+  }
 }
 
 Object.defineProperty(Element.prototype, 'scrollTargetElement', {

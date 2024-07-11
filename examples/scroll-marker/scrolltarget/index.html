@@ -20,36 +20,90 @@
         border: 2px solid black;
         border-radius: 4px;
       }
-      section {
-        height: 100vh;
+      ol {
+        padding-left: 20px;
       }
-      li {
-        cursor: pointer;
+      a:checked {
+        font-weight: bold;
       }
-      li:checked {
-        color: blue;
-        list-style-type: '👉';
+      p::after {
+        display: block;
+        height: 50vh;
+        background: lightgray;
+        content: 'Filler text would go here...';
+      }
+      p {
+        line-height: 200%;
       }
     </style>
   </head>
   <body>
     <div class="toc">
-      <p>Table of contents:</p>
-      <ul>
-        <li scrolltarget="s1">Section 1</li>
-        <li scrolltarget="s2">Section 2</li>
-        <li scrolltarget="s3">Section 3</li>
-      </ul>
+      <h3>Contents</h3>
+      <ol focusgroup>
+        <li><a href="#s1">Introduction</a></li>
+        <ol>
+          <li><a href="#s1-1">Problem</a></li>
+          <li><a href="#s1-2">Related work</a></li>
+        </ol>
+        <li><a href="#s2">Proposal</a></li>
+        <li><a href="#s3">Examples</a></li>
+        <ol>
+          <li><a href="#s3-1">Tabs</a></li>
+          <li><a href="#s3-2">Table of contents</a></li>
+          <li><a href="#s3-3">Page markers</a></li>
+        </ol>
+      </ol>
     </div>
-    <section id="s1">
-      This is an example of how you can use the <a href="https://github.com/flackr/carousel/tree/main/scroll-marker#elements">scrolltarget</a> attribute
-      to create navigation points which track and take you to various points in the document.
-    </section>
-    <section id="s2">
-      For a given scrolling box, one marker is determined to be the <a href="https://github.com/flackr/carousel/tree/main/scroll-marker#the-active-marker">active marker</a>.
-    </section>
-    <section id="s3">
-      When asked to <a href="https://drafts.csswg.org/cssom-view/#document-run-the-scroll-steps">run the scroll steps</a> the active marker should be updated according to the eventual scroll location that the scroller will reach based on the current scrolling operation.
-    </section>
+    <h1 id="s1">Introduction</h1>
+    <p>
+      This is an example of how you can style and wrap regular anchor links
+      with the <a href="https://github.com/flackr/carousel/tree/main/scroll-marker#elements">href</a> attribute
+      to create navigation points which track progress and take you to various points in the document.
+    </p>
+
+    <h2 id="s1-1">Problem</h2>
+    <p>
+      It is often desirable to provide an indication of where the user is in a long scrolling document.
+      This can help the user navigate the table of contents giving context.
+    </p>
+
+    <h2 id="s1-2">Related work</h2>
+    <p>
+      TODO: Add related content.
+    </p>
+  
+    <h1 id="s2">Proposal</h1>
+    <p>
+      For a given scrolling box,
+      one marker is determined to be the <a href="https://github.com/flackr/carousel/tree/main/scroll-marker#the-active-marker">active marker</a>.
+    </p>
+
+    <p>
+      When asked to <a href="https://drafts.csswg.org/cssom-view/#document-run-the-scroll-steps">run the scroll steps</a>
+      the active marker should be updated according to the eventual scroll location that the scroller will reach
+      based on the current scrolling operation.
+    </p>
+
+    <h1 id="s3">Examples</h1>
+    <p>
+      This pattern shows up in many real world use cases.
+    </p>
+
+    <h2 id="s3-1">Tabs</h2>
+    <p>
+      Some developers create tabs by having scrolling tab panels to switch the active tab.
+    </p>
+
+    <h2 id="s3-2">Table of contents</h2>
+    <p>
+      As demonstrated in this document,
+      a table of contents could take advantage of scroll markers to give the user an indication of progress.
+    </p>
+
+    <h2 id="s3-3">Thumbnails</h2>
+    <p>
+      In classic carousels or slide shows, the slide thumbnails / previews serve as links to those images / pages.
+    </p>
   </body>
 </html>

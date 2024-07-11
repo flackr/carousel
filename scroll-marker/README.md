@@ -49,19 +49,19 @@ The `scrolltarget` attribute sets the `scrollTargetElement` of the button to the
 Using pseudo-elements is the *only* way to declaratively handle dynamic cases
 where the number of elements generating markers is not known (e.g. based on [fragmentation](../fragmentation/)).
 
-We create a `::scroll-markers` pseudo-element on [scroll containers](https://www.w3.org/TR/css-overflow-3/#scroll-container).
+We create a `::scroll-marker-group` pseudo-element on [scroll containers](https://www.w3.org/TR/css-overflow-3/#scroll-container).
 This pseudo-element will implicitly have `contain: size`,
-and is either immediately before or after the scroll container depending on the value of the `scroll-markers` property.
+and is either immediately before or after the scroll container depending on the value of the `scroll-marker-group` property.
 
 The `::scroll-marker` pseudo-element will create a focusable marker which when activated will scroll the element into view.
-This pseudo-element will be flowed into the `::scroll-markers` pseudo-element of its containing scroll container. It behaves as a button with a scrollTargetElement set to the psuedo-element's owning element.
+This pseudo-element will be flowed into the `::scroll-marker-group` pseudo-element of its containing scroll container. It behaves as a button with a scrollTargetElement set to the psuedo-element's owning element.
 
 ```css
 ul {
   overflow: auto;
-  scroll-markers: after;
+  scroll-marker-group: after;
 }
-ul::scroll-markers {
+ul::scroll-marker-group {
   display: flex;
   width: 100%;
   /* Reserve space for scroll markers */
@@ -113,7 +113,7 @@ The active marker is considered to be toggled to an on state and can be styled u
 
 ## Example
 
-Scroll markers and the scroll-markers area can be used to create navigation points.
+Scroll markers and the scroll-marker-group area can be used to create navigation points.
 
 Examples build on polyfill:
 * [Using pseudo-elements to dynamically construct legend](https://flackr.github.io/carousel/examples/scroll-marker/)

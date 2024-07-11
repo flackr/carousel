@@ -7,7 +7,7 @@ This can be done today through the use of column fragmentation ([example](https:
 though developers need access to a few additional styles to make these part of a carousel.
 Specifically, developers need to be able to:
 * Set scroll snap points on them.
-* Implicitly create [scroll-markers](../scroll-marker/).
+* Implicitly create [scroll-marker-group](../scroll-marker/).
 
 ## Proposal
 
@@ -27,7 +27,7 @@ ul::fragment {
 }
 ```
 
-This pseudoclass can additionally be used for the creation of [scroll-markers](../scroll-marker/):
+This pseudoclass can additionally be used for the creation of [scroll-marker-group](../scroll-marker/):
 ```css
 ul::fragment::scroll-marker {
   /* Marker styling */
