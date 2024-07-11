@@ -652,16 +652,15 @@ scroll-marker-group {
 }
 
 const SCROLL_MARKER_HANDLERS = {
-  'focus': function(evt) {
-    this.didActivate = false;
-    const elem = this.scrollTargetElement;
-    const scroller = eventTarget(ancestorScroller(elem));
+  'click': function(evt) {
+    if (!ancestorFocusGroup(this))
+      return;
+    this.didActivate = true;
     setActiveMarker(this, true);
   },
-  'click': function(evt) {
-    this.didActivate = true;
-  },
   'keydown': function(evt) {
+    if (!ancestorFocusGroup(this))
+      return;
     const DIRS = {
       'ArrowUp': -1,
       'ArrowLeft': -1,
@@ -680,6 +679,7 @@ const SCROLL_MARKER_HANDLERS = {
     const dir = DIRS[evt.code];
     if (!dir)
       return;
+    this.didActivate = false;
     const elem = this.scrollTargetElement;
     const scrollerElement = ancestorScroller(elem);
     const markers = scrollerElement.scrollMarkers;
@@ -690,6 +690,7 @@ const SCROLL_MARKER_HANDLERS = {
     index = (markers.length + index + dir) % markers.length;
     markers[index].focus();
     markers[index].didActivate = true;
+    setActiveMarker(markers[index], true);
   }
 };
 
