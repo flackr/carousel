@@ -12,7 +12,7 @@
     display: inline-block;
     position: relative;
     aspect-ratio: 2 / 3;
-    height: 100cqh;
+    height: calc(100cqh - 20px);
     box-sizing: border-box;
     contain: size;
 
