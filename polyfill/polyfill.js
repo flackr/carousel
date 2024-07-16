@@ -306,6 +306,9 @@ class FragmentNode {
         this.fragments[index] = box = document.createElement('fragment');
       }
       box.className = 'fragment';
+      let childIdx = 0;
+      for (; childIdx < this.container.children.length - 1 && (this.container.children[childIdx].offsetLeft < rect.left || this.container.children[childIdx].offsetLeft > rect.right); ++childIdx);
+      box.firstFragmentChild = this.container.children[childIdx];
       box.style.top = `${rect.top}px`;
       box.style.left = `${rect.left}px`;
       box.style.width = `${rect.right - rect.left}px`;
@@ -687,7 +690,14 @@ const SCROLL_MARKER_HANDLERS = {
         // Move focus to the scroll target when tabbing away to tab from the location just scrolled to.
         const elem = this.scrollTargetElement;
         this.blur();
-        elem.scrollIntoView();
+        let focusFrom = elem.firstFragmentChild ?? elem;
+        if (focusFrom.hasAttribute('tabindex')) {
+          focusFrom.focus();
+          evt.preventDefault();
+        } else {
+          focusFrom.scrollIntoView();
+          // Let the browser's tab navigation tab from here.
+        }
       }
       return;
     }
