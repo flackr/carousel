@@ -35,12 +35,30 @@
       p {
         line-height: 200%;
       }
+      .progress {
+        position: fixed;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 5px;
+      }
+      .progress div {
+        border-radius: 50%;
+        margin: 10px;
+        width: 25px;
+        height: 25px;
+        border: 2px solid gray;
+        background: white;
+      }
+      .progress a:checked div {
+        background: blue;
+      }
     </style>
   </head>
   <body>
     <div class="toc">
       <h3>Contents</h3>
-      <ol>
+      <ol focusgroup>
         <li><a href="#s1">Introduction</a></li>
         <ol>
           <li><a href="#s1-1">Problem</a></li>
@@ -66,6 +84,9 @@
     <p>
       It is often desirable to provide an indication of where the user is in a long scrolling document.
       This can help the user navigate the table of contents giving context.
+    </p>
+    <p>
+      See the <a href="#s3">examples</a> section for some example of how these may be used.
     </p>
 
     <h2 id="s1-2">Related work</h2>
@@ -105,5 +126,11 @@
     <p>
       In classic carousels or slide shows, the slide thumbnails / previews serve as links to those images / pages.
     </p>
+
+    <div class="progress" focusgroup>
+      <a href="#s1" tabindex="-1"><div></div></a>
+      <a href="#s2" tabindex="-1"><div></div></a>
+      <a href="#s3" tabindex="-1"><div></div></a>
+    </div>
   </body>
 </html>

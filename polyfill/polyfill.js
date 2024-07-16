@@ -363,10 +363,21 @@ function eventTarget(scroller) {
 let markerSelectors = new Set();
 let markerVars = new Set();
 let flowSelectors = new Set();
+const skipGroups = new Set();
 
 function handleScroll() {
   const scrollerElement = this == window ? document.documentElement : this;
   const markers = scrollerElement.scrollMarkers;
+  const groups = new Map();
+  for (let marker of markers) {
+    const focusGroup = ancestorFocusGroup(marker) || 'default';
+    if (skipGroups.has(focusGroup))
+      continue;
+    const group = groups.get(focusGroup) || new Set();
+    group.add(marker);
+    groups.set(focusGroup, group);
+  }
+
   if (!markers || markers.length == 0)
     return;
   const ALIGN_PORTION = {
@@ -375,44 +386,46 @@ function handleScroll() {
     'end': 1
   };
   const SLOP = 1;
-  let selected = markers[0];
-  for (const marker of markers) {
-    const element = marker.scrollTargetElement;
-    if (!element) continue;
-    let position = relativeOffset(this, element);
+  for (let [_, markerSet] of groups) {
+    let selected = null;
+    for (const marker of markerSet) {
+      if (selected === null)
+        selected = marker;
+      const element = marker.scrollTargetElement;
+      if (!element) continue;
+      let position = relativeOffset(this, element);
 
-    // Determine target scroll position taking into account snapping:
-    // TODO: Consider scroll-margin and scroll-padding.
-    const snapAlign = getComputedStyle(element).scrollSnapAlign.split(' ');
-    if (snapAlign.length == 1)
-      snapAlign.push(snapAlign[0]);
-    if (snapAlign[0] != 'none') {
-      position.offsetTop -= ALIGN_PORTION[snapAlign[0]] * Math.max(0, scrollerElement.clientHeight - element.clientHeight);
-    }
-    if (snapAlign[1] != 'none') {
-      position.offsetLeft -= ALIGN_PORTION[snapAlign[1]] * Math.max(0, scrollerElement.clientWidth - element.clientWidth);
-    }
+      // Determine target scroll position taking into account snapping:
+      // TODO: Consider scroll-margin and scroll-padding.
+      const snapAlign = getComputedStyle(element).scrollSnapAlign.split(' ');
+      if (snapAlign.length == 1)
+        snapAlign.push(snapAlign[0]);
+      if (snapAlign[0] != 'none') {
+        position.offsetTop -= ALIGN_PORTION[snapAlign[0]] * Math.max(0, scrollerElement.clientHeight - element.clientHeight);
+      }
+      if (snapAlign[1] != 'none') {
+        position.offsetLeft -= ALIGN_PORTION[snapAlign[1]] * Math.max(0, scrollerElement.clientWidth - element.clientWidth);
+      }
 
-    // Limit offsetTop and offsetLeft by how far we could scroll
-    position.offsetLeft = Math.min(position.offsetLeft, scrollerElement.scrollWidth - scrollerElement.clientWidth);
-    position.offsetTop = Math.min(position.offsetTop, scrollerElement.scrollHeight - scrollerElement.clientHeight);
-    position.offsetLeft -= scrollerElement.scrollLeft;
-    position.offsetTop -= scrollerElement.scrollTop;
-    if (position.offsetLeft > SLOP || position.offsetTop > SLOP) {
-      continue;
+      // Limit offsetTop and offsetLeft by how far we could scroll
+      position.offsetLeft = Math.min(position.offsetLeft, scrollerElement.scrollWidth - scrollerElement.clientWidth);
+      position.offsetTop = Math.min(position.offsetTop, scrollerElement.scrollHeight - scrollerElement.clientHeight);
+      position.offsetLeft -= scrollerElement.scrollLeft;
+      position.offsetTop -= scrollerElement.scrollTop;
+      if (position.offsetLeft > SLOP || position.offsetTop > SLOP) {
+        continue;
+      }
+      selected = marker;
     }
-    selected = marker;
+    if (selected !== null) {
+      setActiveMarker(selected);
+    }
+    const markerScroller = ancestorScroller(selected);
+    if (markerScroller != document.scrollingElement && markerScroller != scrollerElement) {
+      // TODO: This should not scroll ancestor scrollers.
+      selected.scrollIntoView({block: 'nearest', inline: 'nearest', behavior: 'auto'});
+    }
   }
-  setActiveMarker(selected);
-  const markerScroller = ancestorScroller(selected);
-  if (markerScroller != document.scrollingElement && markerScroller != scrollerElement) {
-    // TODO: This should not scroll ancestor scrollers.
-    selected.scrollIntoView({block: 'nearest', inline: 'nearest', behavior: 'auto'});
-  }
-}
-
-function resetHandleScroll() {
-  this.onscroll = handleScroll;
 }
 
 function addPseudoMarker(elem, usedProps) {
@@ -653,10 +666,11 @@ scroll-marker-group {
 
 const SCROLL_MARKER_HANDLERS = {
   'click': function(evt) {
+    setActiveMarker(this, true);
     if (!ancestorFocusGroup(this))
       return;
     this.didActivate = true;
-    setActiveMarker(this, true);
+    evt.preventDefault();
   },
   'keydown': function(evt) {
     if (!ancestorFocusGroup(this))
@@ -715,7 +729,6 @@ function addScrollMarker(marker) {
     return a.compareDocumentPosition(b) == 2; // DOCUMENT_POSITION_PRECEDING
   });
   scroller.onscroll = handleScroll;
-  scroller.onscrollend = resetHandleScroll;
   handleScroll.apply(scroller);
 }
 
@@ -744,7 +757,13 @@ function setActiveMarker(marker, scrollTo) {
     target.offsetLeft = Math.max(0, Math.min(scrollerElement.scrollWidth - scrollerElement.clientWidth, target.offsetLeft));
     target.offsetTop = Math.max(0, Math.min(scrollerElement.scrollHeight - scrollerElement.clientHeight, target.offsetTop));
     if (target.offsetLeft != scrollerElement.scrollLeft || target.offsetTop != scrollerElement.scrollTop) {
-      scroller.onscroll = undefined;
+      const group = ancestorFocusGroup(marker);
+      if (group) {
+        skipGroups.add(group);
+        scroller.addEventListener('scrollend', () => {
+          skipGroups.delete(group);
+        }, {once: true});
+      }
       scroller.scrollTo({
         top: target.offsetTop,
         left: target.offsetLeft,
@@ -754,18 +773,21 @@ function setActiveMarker(marker, scrollTo) {
   }
   const focusGroup = ancestorFocusGroup(marker);
   for (const m of markers) {
-    if (m == marker) continue;
+    const markerGroup = ancestorFocusGroup(m);
+    if (m == marker || markerGroup !== focusGroup) continue;
     m.checked = false;
     m.classList.remove('checked');
     m.setAttribute('aria-selected', false);
-    if (focusGroup && isAncestor(focusGroup, marker)) {
-      m.setAttribute('tabindex', -1);
+    if (focusGroup && isAncestor(focusGroup, marker) && m.originalTabIndex) {
+      m.setAttribute('tabindex', m.originalTabIndex);
     }
   }
   marker.checked = true;
   marker.classList.add('checked');
   marker.setAttribute('aria-selected', true);
-  if (focusGroup) {
+  const originalTabIndex = marker.getAttribute('tabindex');
+  if (focusGroup && originalTabIndex == -1) {
+    marker.originalTabIndex = -1;
     marker.setAttribute('tabindex', 0);
   }
 }

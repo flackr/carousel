@@ -19,7 +19,7 @@ many more advanced UI patterns can be solved in CSS.
 Scroll markers require the combination of several behaviors:
 
 1. They should scroll to the target on activation,
-2. only one of the scroll markers for a given scroller should be active (and focusable) at a time (see [roving tab-index](https://developer.mozilla.org/en-US/docs/Web/Accessibility/Keyboard-navigable_JavaScript_widgets#technique_1_roving_tabindex)),
+2. only one of the scroll markers in a group should be active (and focusable) at a time (see [roving tab-index](https://developer.mozilla.org/en-US/docs/Web/Accessibility/Keyboard-navigable_JavaScript_widgets#technique_1_roving_tabindex)),
 3. arrow keys should cycle between the other markers,
 4. the correct one is automatically activated as a result of scrolling, and
 5. The active marker should be stylable.
@@ -30,19 +30,21 @@ The following proposes how scroll markers can be achieved via elements and via p
 
 ### Elements
 
-We add a new `scrolltarget` attribute to buttons which applies all of the requirements above.
+Existing links using the `href` attribute are automatically considered to be scroll markers.
+When these links are within a `focusgroup`, the one in the focusgroup closest to being scrolled to is considered active.
+The active one will be [remembered as last focused](https://open-ui.org/components/focusgroup.explainer/#last-focused-memory).
 
 E.g.
 
 ```html
-<div class=toc>
-  <button scrolltarget="section-1">Section 1</button>
-  <button scrolltarget="section-2">Section 2</button>
-  <button scrolltarget="section-3">Section 3</button>
+<div class=toc focusgroup>
+  <a href="section-1">Section 1</a><br>
+  <a href="section-2">Section 2</a><br>
+  <a href="section-3">Section 3</a><br>
 </div>
 ```
 
-The `scrolltarget` attribute sets the `scrollTargetElement` of the button to the element with the associated id.
+The `href` attribute sets the `scrollTargetElement` of the `a` anchor element to the element with the associated id.
 
 ### Pseudo-elements
 
@@ -54,7 +56,7 @@ This pseudo-element will implicitly have `contain: size`,
 and is either immediately before or after the scroll container depending on the value of the `scroll-marker-group` property.
 
 The `::scroll-marker` pseudo-element will create a focusable marker which when activated will scroll the element into view.
-This pseudo-element will be flowed into the `::scroll-marker-group` pseudo-element of its containing scroll container. It behaves as a button with a scrollTargetElement set to the psuedo-element's owning element.
+This pseudo-element will be flowed into the `::scroll-marker-group` pseudo-element of its containing scroll container. It behaves as a link with a scrollTargetElement set to the pseudo-element's owning element.
 
 ```css
 ul {
@@ -76,29 +78,25 @@ li::scroll-marker {
 
 ### scrollTargetElement
 
-Scroll markers (buttons with a `scrollTargetElement`) implement the [tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/), in particular:
-* Implicitly form a [focusgroup](https://open-ui.org/components/focusgroup.explainer/) with all other scroll markers for the same scroller.
-  The currently active scroll marker will have a persistent :checked psuedo-class applied to it.
-* Only the active marker will be in the tab index following the [roving tabindex](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_roving_tabindex) behavior.
-* When focus is on a scroll marker, we follow the [radio group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/) for interaction, i.e.:
-  * Left/up arrow moves focus to and activates the previous scroll marker.
-  * Right/down arrow moves focus to and activates the next scroll marker.
+Scroll markers (anchor links and `::scroll-marker` pseudos) with a containing focusgroup implement the [tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/), in particular:
+* The currently active scroll marker within each group will have a persistent :checked psuedo-class applied to it.
+* The active marker will be [remembered as last focused](https://open-ui.org/components/focusgroup.explainer/#last-focused-memory) following the [roving tabindex](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_roving_tabindex) behavior.
 
 In addition,
 1.  these markers automatically respond to other scrolling operations.
     When any scrolling operation takes place,
     the first marker which is considered to be scrolled into view becomes active, but is not focused.
 
-2.  Activation of a marker (e.g. clicking, pressing space / enter) moves focus to the `scrollTargetElement`.
+2.  Activation of a marker (e.g. clicking, pressing space / enter) scrolls to the `scrollTargetElement`.
+    However, if the marker is part of a focusgroup, focus is not moved to the target until tabbing away.
     This allows subsequent tab navigation within the targeted component,
     consistent with following an anchor link navigation,
     and their common use for [skip links](https://www.w3.org/TR/2016/NOTE-WCAG20-TECHS-20161007/G1).
 
 ### The active marker
 
-Within a particular scrolling container, a single scroll marker is determined to be active.
-The active scroll marker is determined as:
-* The one which scrolling into view requires the least scrolling to bring into view.
+A scroll marker is determined to be active per scroller per marker group as follows:
+* The one which scrolling to would not require scrolling or would scroll backwards to scroll to.
 * In a tie, if one is an ancestor of the other, the ancestor is not considered,
 * Of the remaining elements whose scroll distance to scroll into view is the same,
   the first in tree order is selected.
@@ -138,7 +136,7 @@ and interest actions are shown [interest](https://open-ui.org/components/interes
 For scroll markers, we want the action to be taken only when the selected target changes, which occurs on focus, but not on hover.
 This is very similar to an expressed intent to invoke the target.
 
-As such, we propose adding the `invoke` keyword to the `focusgroup` attribute to allow invoking the `invokeaction` on focusgroup focus changes. E.g.
+As such, we'd propose adding the `invoke` keyword to the `focusgroup` attribute to allow invoking the `invokeaction` on focusgroup focus changes. E.g.
 
 ```html
 <style>
