@@ -436,6 +436,7 @@ function addPseudoMarker(elem, usedProps) {
   if (!scroller.scrollMarkerArea)
     return;
   let marker = document.createElement('a');
+  marker.setAttribute('tabindex', -1);
   elem.pseudoElements = elem.pseudoElements || [];
   elem.pseudoElements.push(marker);
   elem.markerElement = marker;
