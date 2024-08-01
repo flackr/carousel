@@ -366,7 +366,7 @@ function eventTarget(scroller) {
 let markerSelectors = new Set();
 let markerVars = new Set();
 let flowSelectors = new Set();
-const skipGroups = new Set();
+let skipGroups = new Set();
 
 function handleScroll() {
   const scrollerElement = this == window ? document.documentElement : this;
@@ -464,6 +464,17 @@ function addPseudoMarker(elem, usedProps) {
 }
 
 function update() {
+  // Cleans up the global state associated with the previous update and injected stylesheets.
+  // Note that the DOM changes are not cleaned up so this will only work if you have replaced all of the modified DOM.
+  markerSelectors = new Set();
+  markerVars = new Set();
+  flowSelectors = new Set();
+  skipGroups = new Set();
+  let removeStyles = document.querySelectorAll('style[polyfill-generated]');
+  for (let sheet of removeStyles) {
+    sheet.remove();
+  }
+
   let generated = document.createElement('style');
   generated.setAttribute('polyfill-generated', 'true');
   let stylesheets = document.querySelectorAll('style:not([polyfill-generated])');
