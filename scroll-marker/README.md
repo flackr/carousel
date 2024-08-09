@@ -26,13 +26,15 @@ Scroll markers require the combination of several behaviors:
 
 ## Proposals
 
-The following proposes how scroll markers can be achieved via elements and via pseudo-elements.
+A scroll marker is an anchor link to an element on the page.
+The following proposes how scroll markers can be created via pseudo-elements and
+enhanced scroll tracking behaviors for existing in-page anchor links.
 
 ### Elements
 
 Existing links using the `href` attribute are automatically considered to be scroll markers.
-When these links are within a `focusgroup`, the one in the focusgroup closest to being scrolled to is considered active.
-The active one will be [remembered as last focused](https://open-ui.org/components/focusgroup.explainer/#last-focused-memory).
+When these links are within a `focusgroup`, the one in the focusgroup nearest to the current scrollport of its scroll container is considered active.
+The active one will be [remembered as last focused](https://open-ui.org/components/focusgroup.explainer/#last-focused-memory) and can be styled using :checked.
 
 E.g.
 
@@ -56,7 +58,11 @@ This pseudo-element will implicitly have `contain: size`,
 and is either immediately before or after the scroll container depending on the value of the `scroll-marker-group` property.
 
 The `::scroll-marker` pseudo-element will create a focusable marker which when activated will scroll the element into view.
-This pseudo-element will be flowed into the `::scroll-marker-group` pseudo-element of its containing scroll container. It behaves as a link with a scrollTargetElement set to the pseudo-element's owning element.
+It behaves as an anchor link with a scrollTargetElement set to the pseudo-element's owning element.
+This pseudo-element will be flowed into the `::scroll-marker-group` pseudo-element of its containing scroll container.
+
+Effectively the `::scroll-marker-group` is an anonymous [flow from](https://drafts.csswg.org/css-regions/#flow-from) region
+which the `::scroll-marker` elements within the scroll container [flow into](https://drafts.csswg.org/css-regions/#the-flow-into-property).
 
 ```css
 ul {
