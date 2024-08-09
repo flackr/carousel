@@ -38,9 +38,9 @@ E.g.
 
 ```html
 <div class=toc focusgroup>
-  <a href="section-1">Section 1</a><br>
-  <a href="section-2">Section 2</a><br>
-  <a href="section-3">Section 3</a><br>
+  <a href="#section-1">Section 1</a><br>
+  <a href="#section-2">Section 2</a><br>
+  <a href="#section-3">Section 3</a><br>
 </div>
 ```
 
@@ -117,9 +117,67 @@ Examples build on polyfill:
 * [Using pseudo-elements to dynamically construct legend](https://flackr.github.io/carousel/examples/scroll-marker/)
 * [Using scrolltarget for table of contents](https://flackr.github.io/carousel/examples/scroll-marker/scrolltarget/)
 
+## Frequently asked questions
+
+### What is the document.activeElement of a focused pseudo-element?
+
+Since the [document.activeElement](https://html.spec.whatwg.org/multipage/interaction.html#dom-documentorshadowroot-activeelement-dev) is expected to be an Element,
+even if we could point to a [CSSPsuedoElement](https://www.w3.org/TR/css-pseudo-4/#CSSPseudoElement-interface) as the active element it would likely be a breaking change.
+As such, the document.activeElement when a scroller related pseudo-element is focused is the scrolling container.
+
+This is similar in spirit to how the active element when focus is within a shadow root the activeElement in the outside document is the shadow root's host element.
+The scrolling container acts as the host for the scrolling container related controls.
+
 ## Alternatives considered
 
-#### Invoker action and focusgroup invoke action
+### Using regions or grid-flow instead of ::scroll-marker-group
+
+It would be reasonable to think that if we had a way of flowing elements into another area,
+we could use that to create the group of scroll markers.
+E.g. you could imagine using the [flow-into](https://drafts.csswg.org/css-regions/#the-flow-into-property) and [flow-from](https://drafts.csswg.org/css-regions/#flow-from) properties as follows:
+
+```html
+<style>
+  .markers {
+    flow-from: markers;
+  }
+  li::scroll-marker {
+    flow-into: markers;
+    content: ' ';
+  }
+</style>
+<ul class=scroller>
+  <li>Item 1</li>
+  <li>Item 2</li>
+  <li>Item 3</li>
+</ul>
+<div class=markers>
+</div>
+```
+
+This is in fact very similar to the original direction of this proposal,
+and is nice in its generality, but was abandoned for a few main reasons:
+
+1.  In virtually every case that developers use scroll markers,
+    they would want them to flow elsewhere rather than inline where the user is already scrolled to the content.
+    Having this implicit with the `::scroll-marker-group` reduces the number of features needed to be combined to establish this.
+2.  Having an implicit group containing the markers makes allows for the implicit establishment of focusgroup semantics for those markers.
+    One is active at a time, and can automatically assign appropriate itemized AX roles.
+    If they're completely independent then there's an expectation they're focused in dom order w.r.t. their owning element,
+    and not necessarily linked with the other markers.
+3.  Requires the developer to create the area for the markers.
+    This could be alleviated by allowing the `::before` or `::after` pseudo-elements to contain flowing content,
+    but would likely introduce significant complexity. E.g.
+    ```css
+    .scroller::after {
+      flow-from: markers;
+    }
+    ```
+
+This is still a nice direction to be considered, and potentially which we could even explain the behavior of `::scroll-marker-group` in the future.
+E.g. If we decide to do this later, we could explain that the default `::scroll-marker` `flow-into` value is the `flow-from` established by the `::scroll-marker-group`.
+
+### Invoker action and focusgroup invoke action
 
 We could add a new built-in `invoke-action` (see [invokers](https://open-ui.org/components/invokers.explainer/)) `scrollTo`. When invoked, the `invokeTarget` will be scrolled to within its ancestor scrolling container. E.g.
 
