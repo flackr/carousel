@@ -158,9 +158,10 @@ E.g. you could imagine using the [flow-into](https://drafts.csswg.org/css-region
 This is in fact very similar to the original direction of this proposal,
 and is nice in its generality, but was abandoned for a few main reasons:
 
-1.  In virtually every case that developers use scroll markers,
+1.  In most use cases that developers use scroll markers,
     they would want them to flow elsewhere rather than inline where the user is already scrolled to the content.
     Having this implicit with the `::scroll-marker-group` reduces the number of features needed to be combined to establish this.
+    A notable exception to this is that when not reflowed they could serve as self links [#10498](https://github.com/w3c/csswg-drafts/issues/10498).
 2.  Having an implicit group containing the markers makes allows for the implicit establishment of focusgroup semantics for those markers.
     One is active at a time, and can automatically assign appropriate itemized AX roles.
     If they're completely independent then there's an expectation they're focused in dom order w.r.t. their owning element,
