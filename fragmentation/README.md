@@ -11,7 +11,10 @@ Specifically, developers need to be able to:
 
 ## Proposal
 
-We propose a pseudoclass, which allows applying a limited set of styles to the generated fragments.
+See [#10715](https://github.com/w3c/csswg-drafts/issues/10715) for discussion of the proposal.
+We propose one of a few options for addressing this use case, the first of which is explored here.
+
+A ::fragment pseudoclass, which allows applying a limited set of styles to the generated fragments.
 Specifically, this would be limited to styles which do not affect the layout,
 and thus can be applied post-layout.
 
