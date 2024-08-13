@@ -25,6 +25,7 @@
       position: relative;
       background: var(--src);
       background-size: cover;
+      scroll-snap-align: center;
 
       & > figcaption {
         position: absolute;

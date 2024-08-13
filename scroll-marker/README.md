@@ -34,7 +34,7 @@ enhanced scroll tracking behaviors for existing in-page anchor links.
 
 Existing links using the `href` attribute are automatically considered to be scroll markers.
 When these links are within a `focusgroup`, the one in the focusgroup nearest to the current scrollport of its scroll container is considered active.
-The active one will be [remembered as last focused](https://open-ui.org/components/focusgroup.explainer/#last-focused-memory) and can be styled using :checked.
+The active one will be [remembered as last focused](https://open-ui.org/components/focusgroup.explainer/#last-focused-memory) and can be styled using `:checked`.
 
 E.g.
 
