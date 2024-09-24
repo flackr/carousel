@@ -643,12 +643,6 @@ scroll-marker-group {
     elem.parentElement.insertBefore(elem.scrollMarkerArea, beforeElem);
   }
 
-  const SCROLL_AMOUNTS = {
-    right: {left: 40},
-    left: {left: -40},
-    up: {top: -40},
-    down: {top: 40}
-  };
   for (let direction of ['up', 'left', 'right', 'down']) {
     if (!buttonContainers[direction])
       continue;
@@ -658,7 +652,15 @@ scroll-marker-group {
       let nextSibling = scroller;
       scroller.parentElement.insertBefore(button, nextSibling);
       button.addEventListener('click', (evt) => {
-        scroller.scrollBy({...SCROLL_AMOUNTS[direction], behavior: 'smooth'});
+        let scrollAmount = {};
+        if (direction == 'up' || direction == 'down') {
+          scrollAmount.top = scroller.clientHeight * 0.85;
+          if (direction == 'up') scrollAmount.top *= -1;
+        } else if (direction == 'left' || direction == 'right') {
+          scrollAmount.left = scroller.clientWidth * 0.85;
+          if (direction == 'left') scrollAmount.left *= -1;
+        }
+        scroller.scrollBy({...scrollAmount, behavior: 'smooth'});
         evt.preventDefault();
       });
       let updateDisabled = () => {
