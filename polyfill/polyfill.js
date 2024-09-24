@@ -506,6 +506,14 @@ scroll-marker-group {
   let remap = {};
   let buttonContainers = {};
   for (let block of blocks) {
+    if (block.props['scroll-marker-group']) {
+      let mutatedSelector = updateSelectors(block.selector);
+      extraCSS += `${mutatedSelector} {\n  --scroll-marker-group: ${block.props['scroll-marker-group']};\n}\n`;
+      if (!registerPropertySupported) {
+        extraCSS += `:where(${mutatedSelector}>*) {\n  --scroll-marker-group: none;\n}\n`;
+      }
+      markerAreaSelectors.add(mutatedSelector);
+    }
     if (block.props['grid-flow']) {
       let mutatedSelector = updateSelectors(block.selector);
       extraCSS += `${mutatedSelector} {\n  --grid-flow: ${block.props['grid-flow']};\n}\n`;
@@ -544,11 +552,6 @@ scroll-marker-group {
       const name = flow[2];
       flowContainers[selector] = flowContainers[selector] || new Set();
       flowContainers[selector].add(name);
-    }
-    let markers = /^(.*)::scroll-marker-group$/.exec(block.selector);
-    if (markers) {
-      const selector = updateSelectors(markers[1]);
-      markerAreaSelectors.add(selector);
     }
     let marker = /^(.*)::scroll-marker$/.exec(block.selector);
     if (marker) {
@@ -607,9 +610,16 @@ scroll-marker-group {
   for (let elem of getElems(markerAreaSelectors)) {
     if (elem.scrollMarkerArea)
       continue;
+    let pos = getComputedStyle(elem).getPropertyValue('--scroll-marker-group');
+    if (pos == 'none')
+      return;
     elem.scrollMarkerArea = document.createElement('scroll-marker-group');
     elem.scrollMarkerArea.setAttribute('focusgroup', '');
-    elem.parentElement.insertBefore(elem.scrollMarkerArea, elem.nextElementSibling);
+    let beforeElem = elem;
+    if (pos != 'before')
+      beforeElem = elem.nextElementSibling;
+
+    elem.parentElement.insertBefore(elem.scrollMarkerArea, beforeElem);
   }
 
   const SCROLL_AMOUNTS = {
