@@ -649,15 +649,13 @@ scroll-marker-group {
     up: {top: -40},
     down: {top: 40}
   };
-  // TODO: Create in consistent order.
-  for (let direction in buttonContainers) {
+  for (let direction of ['up', 'left', 'right', 'down']) {
+    if (!buttonContainers[direction])
+      continue;
     for (let scroller of getElems(buttonContainers[direction])) {
       let button = document.createElement('button');
       button.className = `scroll-${direction}-button`;
       let nextSibling = scroller;
-      if (['down', 'right'].indexOf(direction) != -1) {
-        nextSibling = nextSibling.nextElementSibling;
-      }
       scroller.parentElement.insertBefore(button, nextSibling);
       button.addEventListener('click', (evt) => {
         scroller.scrollBy({...SCROLL_AMOUNTS[direction], behavior: 'smooth'});
@@ -732,6 +730,9 @@ scroll-marker-group {
 }
 
 const SCROLL_MARKER_HANDLERS = {
+  'blur': function(evt) {
+    this.didActivate = false;
+  },
   'click': function(evt) {
     setActiveMarker(this, true);
     if (!ancestorFocusGroup(this))
