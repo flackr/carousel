@@ -18,6 +18,12 @@ if (registerPropertySupported) {
     inherits: false,
     initialValue: 'none'
   });
+  CSS.registerProperty({
+    name: '--overflow-interactivity',
+    syntax: 'auto | inert',
+    inherits: false,
+    initialValue: 'auto'
+  });
 }
 
 // Parses CSS text into flattened selectors and property values
@@ -508,6 +514,7 @@ scroll-marker-group {
 }\n`;
   let markerAreaSelectors = new Set();
   let fragmentSelectors = new Set();
+  let interactivitySelectors = new Set();
   let flowContainers = {};
   let remap = {};
   let buttonContainers = {};
@@ -534,6 +541,14 @@ scroll-marker-group {
         let destinationSelector = `${result[1]}::grid-flow(${block.props['grid-flow']})${result[3]}`;
         remap[block.selector] = destinationSelector;
       }
+    }
+    if (block.props['overflow-interactivity']) {
+      let mutatedSelector = updateSelectors(block.selector);
+      extraCSS += `${mutatedSelector} {\n  --overflow-interactivity: ${block.props['overflow-interactivity']};\n}\n`;
+      if (!registerPropertySupported) {
+        extraCSS += `:where(${mutatedSelector}>*) {\n  --overflow-interactivity: auto;\n}\n`;
+      }
+      interactivitySelectors.add(mutatedSelector);
     }
   }
 
@@ -692,6 +707,27 @@ scroll-marker-group {
   // Process fragmented elements.
   for (let elem of getElems(fragmentSelectors)) {
     new FragmentNode(elem);
+  }
+
+  for (let elem of getElems(interactivitySelectors)) {
+    let updateInteractivity = () => {
+      let containerRect = elem.getBoundingClientRect();
+      const container = elem.querySelector(':scope > fragments-container') || elem;
+      for (let child of container.children) {
+        let childRect = child.getBoundingClientRect();
+        const inView =  childRect.right > containerRect.left && childRect.left < containerRect.right && childRect.bottom > containerRect.top && childRect.top < containerRect.bottom;
+        if (inView)
+          child.removeAttribute('inert');
+        else
+          child.setAttribute('inert', '');
+      }
+    };
+    requestAnimationFrame(updateInteractivity);
+    elem.addEventListener('scroll', updateInteractivity);
+    const resizeObserver = new ResizeObserver((entries) => {
+      updateInteractivity();
+    });
+    resizeObserver.observe(elem);
   }
 }
 
