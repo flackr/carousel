@@ -12,6 +12,12 @@ if (registerPropertySupported) {
     inherits: false,
     initialValue: 'none'
   });
+  CSS.registerProperty({
+    name: '--scroll-marker-group',
+    syntax: 'none | before | after',
+    inherits: false,
+    initialValue: 'none'
+  });
 }
 
 // Parses CSS text into flattened selectors and property values
