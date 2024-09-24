@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scroll-marker and grid-flow example</title>
+    <script src="../../../polyfill/polyfill.js"></script>
+    <style>
+      .grid {
+        display: grid;
+        grid-template-areas:
+            "top"
+            "main";
+        grid-template-rows: auto 1fr;
+        overflow: hidden;
+        height: 60vh;
+        resize: both;
+      }
+      .scroller {
+        grid-area: main;
+        border: 2px solid green;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        scroll-marker-group: before;
+        scroll-snap-type: x mandatory;
+        position: relative;
+        flex-direction: row;
+        white-space: nowrap;
+      }
+      .scroller::scroll-marker-group {
+        grid-area: top;
+        border: 2px solid blue;
+        height: 40px;
+        display: flex;
+      }
+      .tab::scroll-marker {
+        cursor: pointer;
+        margin: 10px;
+        content: attr(data-name);
+      }
+      .tab::scroll-marker:checked {
+        color: blue;
+      }
+      .tab {
+        display: inline-block;
+        box-sizing: border-box;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        white-space: normal;
+        scroll-snap-align: start;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid">
+      <div class="scroller">
+        <div class="tab" data-name="First">
+          This is an example of how you can use ::scroll-marker with grid-flow
+          to automatically create navigation points which take you to various points in the document.
+          The markers are created automatically for each tab.
+        </div>
+        <div class="tab" data-name="Second">
+          When layout runs,
+          the pseudo markers are generated for each tab,
+          and flowed into the scroll-marker-group area.
+        </div>
+        <div class="tab" data-name="Third">
+          This is an example of the advanced pattern.
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

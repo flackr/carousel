@@ -841,7 +841,7 @@ function setActiveMarker(marker, scrollTo) {
       scroller.scrollTo({
         top: target.offsetTop,
         left: target.offsetLeft,
-        behavior: 'smooth'
+        behavior: getComputedStyle(scroller).scrollBehavior
       });
     }
   }
