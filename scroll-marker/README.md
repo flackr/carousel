@@ -121,6 +121,7 @@ Scroll markers and the scroll-marker-group area can be used to create navigation
 
 Examples build on polyfill:
 * [Using pseudo-elements to dynamically construct legend](https://flackr.github.io/carousel/examples/scroll-marker/)
+* [Pseudo-elements constructing tabs](https://flackr.github.io/carousel/examples/scroll-marker/tabs/)
 * [Using scrolltarget for table of contents](https://flackr.github.io/carousel/examples/scroll-marker/scrolltarget/)
 
 ## Frequently asked questions

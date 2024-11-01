@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scroller hosted pseudo-element structure</title>
+    <style>
+      html {
+        padding: 0 5vw;
+      }
+      body {
+        --content: orange;
+        --scroller: blue;
+        --pseudo: cyan;
+        position: relative;
+      }
+
+      .label {
+        padding-left: 8px;
+      }
+      .label.content-label {
+        --label-color: var(--content);
+      }
+      .label.scroller-label {
+        --label-color: var(--scroller);
+      }
+      .label.pseudo-label {
+        --label-color: var(--pseudo);
+      }
+      .label::marker {
+        content: '■';
+        color: var(--label-color);
+        border: 1px solid black;
+      }
+
+      .scroller {
+        border: 5px solid var(--scroller);
+        counter-reset: section;
+        padding: 16px;
+      }
+
+      .section {
+        font-size: 32px;
+        height: 200px;
+        counter-increment: section;
+      }
+      .section::before {
+        content: "Section " counter(section);
+      }
+
+      .contents {
+        border: 3px solid var(--content);
+        position: relative;
+        padding-top: 12px;
+      }
+      .contents::before {
+        position: absolute;
+        content: 'Scrolling contents';
+      }
+
+      .scrollport {
+        overflow: auto;
+        height: 300px;
+      }
+
+      .scroll-marker-group {
+        text-align: center;
+      }
+      .scroll-marker {
+        margin: 0 20px;
+      }
+
+      /* Label styles */
+      .contents::before, .pseudo::before {
+        border: inherit;
+        border-width: 0 1px 1px 0;
+        background: rgba(150,150,150, 0.3);
+        font-size: 10px;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      /* Pseudo-element labels and borders. */
+      .pseudo {
+        border: 1px solid var(--pseudo);
+        font-size: 32px;
+        position: relative;
+      }
+      .scroll-marker::before {
+        content: '::scroll-marker';
+      }
+      .scroll-marker-group::before {
+        content: '::scroll-marker-group';
+      }
+      .scroll-button.up::before {
+        content: '::scroll-button(block-start)';
+      }
+      .scroll-button.down::before {
+        content: '::scroll-button(block-end)';
+      }
+
+    </style>
+  </head>
+  <body>
+    <h1>Scroller hosted pseudo-element structure</h1>
+    <p>The following shows a visualization of possible arrangements of the ::scroll-button and ::scroll-marker-group pseudo-elements with respect to the originating scrolling container.</p>
+    <p>The boxes are colored as follows:
+    <ul>
+      <li class="label content-label">Scrolling contents (orange)</li>
+      <li class="label pseudo-label">Pseudo-elements (cyan)</li>
+      <li class="label scroller-label">Scrolling container (blue)</li>
+    </ul>
+    </p>
+    <h2 id="normal-children">Option 1: Normal children</h2>
+    <div class="container">
+      <div class="scroller scrollport">
+        <div class="contents">
+          <div class="pseudo up scroll-button">⬆️</div>
+          <div class="pseudo down scroll-button">⬇️</div>
+          <div class="section" id="a-1"></div>
+          <div class="section" id="a-2"></div>
+          <div class="section" id="a-3"></div>
+          <div class="pseudo scroll-marker-group">
+            <a class="pseudo scroll-marker" href="#a-1">1</a>
+            <a class="pseudo scroll-marker" href="#a-2">2</a>
+            <a class="pseudo scroll-marker" href="#a-3">3</a>
+          </div>
+        </div>
+      </div>
+    </div>    
+
+    <h2 id="siblings">Option 2: Siblings</h2>
+    <div class="container">
+      <div class="pseudo up scroll-button">⬆️</div>
+      <div class="pseudo down scroll-button">⬇️</div>
+      <div class="scroller scrollport">
+        <div class="contents">
+          <div class="section" id="b-1"></div>
+          <div class="section" id="b-2"></div>
+          <div class="section" id="b-3"></div>
+        </div>
+      </div>
+      <div class="pseudo scroll-marker-group">
+        <a class="pseudo scroll-marker" href="#b-1">1</a>
+        <a class="pseudo scroll-marker" href="#b-2">2</a>
+        <a class="pseudo scroll-marker" href="#b-3">3</a>
+      </div>
+    </div>    
+
+    <h2 id="box-parts">Option 3: Box parts</h2>
+
+    <div class="container">
+      <div class="scroller">
+        <div class="pseudo up scroll-button">⬆️</div>
+        <div class="pseudo down scroll-button">⬇️</div>
+        <div class="scrollport">
+          <div class="contents">
+            <div class="section" id="b-1"></div>
+            <div class="section" id="b-2"></div>
+            <div class="section" id="b-3"></div>
+          </div>
+        </div>
+        <div class="pseudo scroll-marker-group">
+          <a class="pseudo scroll-marker" href="#b-1">1</a>
+          <a class="pseudo scroll-marker" href="#b-2">2</a>
+          <a class="pseudo scroll-marker" href="#b-3">3</a>
+        </div>
+      </div>
+    </div>    
+
+  </body>
+</html>
