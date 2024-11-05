@@ -20,12 +20,12 @@ CSS-only component libraries could be built to further simplify this process.
 
 ## The features
 
-### Stylable fragmentation
+### Stylable columns
 
 Carousels often show multiple items as a single group.
 Typically the user advances through one group at time.
 
-See the [fragmentation](fragmentation/) explainer for more details. 
+See the [fragmentation](fragmentation/) explainer for more details.
 
 ### Scroll markers
 

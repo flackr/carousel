@@ -315,9 +315,9 @@ class FragmentNode {
         box = this.fragments[index];
       } else {
         created = true;
-        this.fragments[index] = box = document.createElement('fragment');
+        this.fragments[index] = box = document.createElement('column');
       }
-      box.className = 'fragment';
+      box.className = 'column';
       let childIdx = 0;
       for (; childIdx < this.container.children.length - 1 && (this.container.children[childIdx].offsetLeft < rect.left || this.container.children[childIdx].offsetLeft > rect.right); ++childIdx);
       box.firstFragmentChild = this.container.children[childIdx];
@@ -334,7 +334,7 @@ class FragmentNode {
 
 function updateSelectors(selector, forPseudo) {
   return selector.
-      replaceAll('::fragment', '>fragment').
+      replaceAll('::column', '>column').
       replace(/::grid-flow\(([^)]*)\)/g, '>.grid-flow-\$1').
       replace(/[^ >+,]*::scroll-(left|right|up|down)-button/g, forPseudo?'.scroll-\$1-button::before':'.scroll-\$1-button').
       // TODO: Track where the corresponding scroll-marker-group are flowed into,
@@ -507,7 +507,7 @@ scroll-marker-group {
   contain: size;
   display: block;
 }
-.fragment {
+.column {
   position: absolute;
   box-sizing: border-box;
   pointer-events: none;
@@ -590,7 +590,7 @@ scroll-marker-group {
         extraCSS += `:where(${selector}>*) {\n  --scroll-marker: none;\n}\n`;
       }
     }
-    let fragment = /^(.*)::fragment/.exec(block.selector);
+    let fragment = /^(.*)::column/.exec(block.selector);
     if (fragment) {
       // Selector on which grid fragment was added.
       const selector = updateSelectors(fragment[1]);

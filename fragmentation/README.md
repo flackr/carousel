@@ -1,4 +1,4 @@
-# Expanded fragmentation styling
+# Column styling
 
 ## Problem
 
@@ -12,9 +12,9 @@ Specifically, developers need to be able to:
 ## Proposal
 
 See [#10715](https://github.com/w3c/csswg-drafts/issues/10715) for discussion of the proposal.
-We propose one of a few options for addressing this use case, the first of which is explored here.
+We propose one of a few options for addressing this use case, the last of which is the expected path explored here.
 
-A ::fragment pseudoclass, which allows applying a limited set of styles to the generated fragments.
+A ::column pseudoclass, which allows applying a limited set of styles to the generated columns.
 Specifically, this would be limited to styles which do not affect the layout,
 and thus can be applied post-layout.
 
@@ -25,14 +25,14 @@ ul {
   container-type: size;
   columns: 1;
 }
-ul::fragment {
+ul::column {
   scroll-snap-align: center;
 }
 ```
 
 This pseudoclass can additionally be used for the creation of [scroll-marker-group](../scroll-marker/):
 ```css
-ul::fragment::scroll-marker {
+ul::column::scroll-marker {
   /* Marker styling */
 }
 ```

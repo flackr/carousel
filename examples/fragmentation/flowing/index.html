@@ -28,7 +28,7 @@
         columns: 1;
         padding: 8px;
       }
-      .scroller::fragment {
+      .scroller::column {
         scroll-snap-align: center;
       }
       .scroller::scroll-marker-group {
@@ -36,7 +36,7 @@
         grid-area: markers;
         text-align: center;
       }
-      .scroller::fragment::scroll-marker {
+      .scroller::column::scroll-marker {
         content: "";
         border-radius: 50%;
         width: 25px;
