@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Active marker prototypes</title>
+    <style>
+      body {
+        position: relative;
+        padding: 0 5vw;
+        --scroller-alpha: rgba(0, 0, 255, 0.5);
+        --item-alpha: rgba(0, 255, 0, 0.5);
+        --scroller-height: min(200px, 50vh);
+      }
+
+      .scroller {
+        border: 5px solid blue;
+        width: 80vw;
+        padding: 8px;
+        height: var(--scroller-height);
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        overflow: auto;
+        white-space: nowrap;
+        scroll-snap-type: x mandatory;
+        counter-reset: item-no;
+        overscroll-behavior-x: contain;
+      }
+
+      .close .item {
+        width: 11.3vw;
+      }
+      .item {
+        display: inline-block;
+        height: calc(var(--scroller-height) - 10px);
+        position: relative;
+        width: 12vw;
+        border: 5px solid green;
+        box-sizing: border-box;
+        scroll-snap-align: center;
+      }
+      .item::after {
+        counter-increment: item-no;
+        content: "Item " counter(item-no);
+      }
+
+      /* Scroll-align indicators */
+      .scroller {
+        background-image: linear-gradient(90deg, transparent 0%, transparent calc(50% - 1px), var(--scroller-alpha) calc(50% - 1px), var(--scroller-alpha) calc(50% + 1px), transparent calc(50% + 1px), transparent 100%);
+      }
+      .item {
+        background-image: linear-gradient(90deg, transparent 0%, transparent calc(50% - 1px), var(--item-alpha) calc(50% - 1px), var(--item-alpha) calc(50% + 1px), transparent calc(50% + 1px), transparent 100%);
+      }
+
+      .scroll-marker-group {
+        padding: 8px;
+        white-space: nowrap;
+        text-align: center;
+        counter-reset: marker;
+      }
+      .scroll-marker {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        border: 1px solid black;
+      }
+      .scroll-marker::before {
+        font-size: 12px;
+        counter-increment: marker;
+        content: counter(marker);
+      }
+      .scroll-marker.selected {
+        background: blue;
+      }
+
+      .slide {
+        position: sticky;
+        display: inline-block;
+        right: calc(80vw - 10 * 12.5vw);
+        left: calc(80vw - 10 * 12.5vw);
+      }
+      .end-spacer {
+        display: inline-block;
+        width: 40vw;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Active marker calculation</h1>
+    
+    <h2>Dealing with unreachable scroll positions</h2>
+    
+    <p>
+      There are common circumstances in which
+      scroll markers will target elements
+      whose scroll aligned positions cannot be uniquely reached in the scrolling container.
+      As an example, consider the following scrolling container whose items have <code>scroll-snap-align: center;</code>
+    </p>
+
+    <div id="scroller1" class="wrapper">
+
+      <div class="scroller">
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+      </div>
+    </div>
+
+    <p>
+      The furthest left that this scroller can scroll has item 4 closest to its scroll aligned position.
+      This means that in the initial scroll position, at a scroll offset 0,
+      item 4 is the one that would be active.
+      Similarly when you reach the end of the scroller,
+      the 4th last item would be active.
+    </p>
+
+    <div id="scroller-closest" class="wrapper"></div>
+
+    <p>
+      Alternately, we could spec that item 0 is active in the initial position,
+      and the last item in the end position.
+      However, this this just creates a jump in the active marker as soon as you start scrolling: 
+    </p>
+
+    <div id="scroller-end-jump" class="wrapper"></div>
+
+    <p>
+      None of these behaviors seem ideal, so let's explore some options for improving the situation.
+    </p>
+
+    <h3 id="virtual-scroll">Additional virtual scrolling</h3>
+
+    <p>
+      If the scroll aligned position of some items falls outside of the scrollable range,
+      extend that scrollable range virtually to allow aligning those items.
+    </p>
+
+    <div id="scroller-virtual" class="wrapper">
+
+      <div class="scroller" style="scroll-snap-type: none">
+        <div class="end-spacer"></div>
+        <div class="slide">
+          <div class="item"></div>
+          <div class="item"></div>
+          <div class="item"></div>
+          <div class="item"></div>
+          <div class="item"></div>
+          <div class="item"></div>
+          <div class="item"></div>
+          <div class="item"></div>
+          <div class="item"></div>
+          <div class="item"></div>
+        </div>
+        <div class="end-spacer"></div>
+      </div>
+    </div>
+
+    <h3 id="proportional">Distribute scroll proportionally</h3>
+
+    <p>
+      We could distribute the selected marker proportionally between the marker locations.
+      They wouldn't be aligned when active but you would be able to reach all markers.
+    </p>
+
+    <div id="scroller-proportional" class="wrapper"></div>
+
+    <h3 id="distribute-ends">Distribute scroll leading up to first reachable item</h3>
+
+    <p>
+      We could distribute the scroll positions leading up to the first alignable item between the markers leading up to it,
+      and do similarly for the items following the last alignable item.
+    </p>
+
+    <div id="scroller-proportional-ends" class="wrapper"></div>
+ 
+    <p>
+      However, if the first alignable item is a tiny distance away this will still likely result in a jump at the start.
+    </p>
+
+    <div id="scroller-proportional-ends2" class="wrapper close"></div>
+
+    <h3 id="distribute-page">Distribute scroll leading up to first reachable item</h3>
+
+    <p>
+      Similar to the previous option, however we distribute the scroll up to the first half-page of non-alignable items.
+      This prevents from ever having a sudden jump but means that there may be alignable items at the start / end which are not active when aligned.
+    </p>
+    <div id="scroller-proportional-page" class="wrapper close"></div>
+
+
+  </body>
+  <script>
+    function cloneInto(target, source) {
+      for (let child of source.children) {
+        target.appendChild(child.cloneNode(true));
+      }
+    }
+    function setupMarkers(scroller, behavior) {
+      let group = document.createElement('div');
+      group.classList.add('scroll-marker-group');
+      let items = Array.prototype.slice.apply(scroller.querySelectorAll('.item'));
+      let markers = [];
+      for (let item of items) {
+        let marker = document.createElement('div');
+        markers.push(marker);
+        marker.classList.add('scroll-marker');
+        group.appendChild(marker);
+      }
+      scroller.parentElement.insertBefore(group, scroller.nextElementSibling);
+      let updateSelected = () => {
+        let selected = behavior(scroller, items, markers);
+        markers.forEach(marker => {
+          if (marker == selected) {
+            marker.classList.add('selected');
+          } else {
+            marker.classList.remove('selected');
+          }
+        });
+      };
+      scroller.addEventListener('scroll', updateSelected);
+      updateSelected();
+    }
+
+    function getScroller(el) {
+      el = el.parentElement;
+      while (el && ['visible', 'clip'].indexOf(getComputedStyle(el).overflowX) != -1)
+        el = el.parentElement;
+      return el;
+    }
+
+    function scrollOffsetLeft(el) {
+      let offsetLeft = 0;
+      const scroller = getScroller(el);
+      while(el && el != scroller) {
+        offsetLeft += el.offsetLeft;
+        el = el.offsetParent;
+      }
+      return offsetLeft;
+    }
+
+    function alignedOffset(item) {
+      const scroller = getScroller(item);
+      return scrollOffsetLeft(item) + item.offsetWidth / 2 - scroller.clientWidth / 2;
+    }
+
+    function selectNearest(scroller, items, markers) {
+      let bdist = Infinity;
+      let closest = null;
+      for (let i = 0; i < items.length; ++i) {
+        let dist = Math.abs(alignedOffset(items[i]) - scroller.scrollLeft);
+        if (dist < bdist) {
+          bdist = dist;
+          closest = markers[i];
+        }
+      }
+      return closest;
+    }
+
+    function selectNearestWithEdgeException(scroller, items, markers) {
+      if (scroller.scrollLeft <= 0)
+        return markers[0];
+      if (scroller.scrollLeft >= scroller.scrollWidth - scroller.clientWidth)
+        return markers[markers.length - 1];
+      return selectNearest(scroller, items, markers);
+    }
+
+    function selectProportional(scroller, items, markers) {
+      const sizes = items.map(item => item.offsetWidth);
+      const total = sizes.reduce((a, b) => a + b, 0);
+      let proportion = scroller.scrollLeft / (scroller.scrollWidth - scroller.clientWidth);
+      for (let i = 0 ; i < items.length; ++i) {
+        if (proportion < sizes[i] / total)
+          return markers[i];
+        proportion -= sizes[i] / total;
+      }
+      return markers[markers.length - 1];
+    }
+
+    function selectProportionalEnds(scroller, items, markers) {
+      const positions = items.map(item => alignedOffset(item));
+      const maxScroll = scroller.scrollWidth - scroller.clientWidth;
+      const firstAlignable = positions.findIndex(p => p > 0);
+      const lastAlignable = positions.findIndex(p => p > maxScroll) - 1;
+      if (scroller.scrollLeft < positions[firstAlignable] || scroller.scrollLeft > positions[lastAlignable]) {
+        const selectStart = scroller.scrollLeft < positions[firstAlignable] ? 0 : lastAlignable + 1;
+        const selectLength = scroller.scrollLeft < positions[firstAlignable] ? firstAlignable : items.length - lastAlignable;
+        const scrollStart = scroller.scrollLeft < positions[firstAlignable] ? 0 : positions[lastAlignable];
+        const scrollLength = scroller.scrollLeft < positions[firstAlignable] ? positions[firstAlignable] : maxScroll - positions[lastAlignable];
+        return markers[Math.min(markers.length - 1, selectStart + Math.floor(selectLength * (scroller.scrollLeft - scrollStart) / scrollLength))];
+      }
+      return selectNearest(scroller, items, markers);
+    }
+
+    function selectProportionalPageEnds(scroller, items, markers) {
+      const positions = items.map(item => alignedOffset(item));
+      const maxScroll = scroller.scrollWidth - scroller.clientWidth;
+      const firstAlignable = positions.findIndex(p => p > scroller.clientWidth / 2);
+      const lastAlignable = positions.findIndex(p => p > maxScroll - scroller.clientWidth / 2) - 1;
+      if (scroller.scrollLeft < positions[firstAlignable] || scroller.scrollLeft > positions[lastAlignable]) {
+        const selectStart = scroller.scrollLeft < positions[firstAlignable] ? 0 : lastAlignable + 1;
+        const selectLength = scroller.scrollLeft < positions[firstAlignable] ? firstAlignable : items.length - lastAlignable;
+        const scrollStart = scroller.scrollLeft < positions[firstAlignable] ? 0 : positions[lastAlignable];
+        const scrollLength = scroller.scrollLeft < positions[firstAlignable] ? positions[firstAlignable] : maxScroll - positions[lastAlignable];
+        return markers[Math.min(markers.length - 1, selectStart + Math.floor(selectLength * (scroller.scrollLeft - scrollStart) / scrollLength))];
+      }
+      return selectNearest(scroller, items, markers);
+    }
+
+    function $(selector) {
+      return document.querySelector(selector);
+    }
+
+    const source = $('#scroller1');
+    cloneInto($('#scroller-closest'), source);
+    cloneInto($('#scroller-end-jump'), source);
+    cloneInto($('#scroller-proportional'), source);
+    cloneInto($('#scroller-proportional-ends'), source);
+    cloneInto($('#scroller-proportional-ends2'), source);
+    cloneInto($('#scroller-proportional-page'), source);
+    setupMarkers($('#scroller-closest .scroller'), selectNearest);
+    setupMarkers($('#scroller-end-jump .scroller'), selectNearestWithEdgeException);
+    setupMarkers($('#scroller-virtual .scroller'), selectProportional);
+    setupMarkers($('#scroller-proportional .scroller'), selectProportional);
+    setupMarkers($('#scroller-proportional-ends .scroller'), selectProportionalEnds);
+    setupMarkers($('#scroller-proportional-ends2 .scroller'), selectProportionalEnds);
+    setupMarkers($('#scroller-proportional-page .scroller'), selectProportionalPageEnds);
+  </script>
+</html>
