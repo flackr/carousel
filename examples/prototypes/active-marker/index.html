@@ -12,6 +12,13 @@
         --scroller-height: min(200px, 50vh);
       }
 
+      h2:not(:hover) .self-link, h3:not(:hover) .self-link {
+        display: none;
+      }
+      .self-link {
+        margin-left: 1ch;
+      }
+
       .scroller {
         border: 5px solid blue;
         width: 80vw;
@@ -89,7 +96,7 @@
   <body>
     <h1>Active marker calculation</h1>
     
-    <h2>Dealing with unreachable scroll positions</h2>
+    <h2 id="unreachable">Dealing with unreachable scroll positions</h2>
     
     <p>
       There are common circumstances in which
@@ -324,6 +331,16 @@
       return document.querySelector(selector);
     }
 
+    function createSelfLinks(selector) {
+      for (let el of document.querySelectorAll(selector)) {
+        let a = document.createElement('a');
+        a.href = `#${el.id}`;
+        a.textContent = '#';
+        a.classList.add('self-link');
+        el.appendChild(a);
+      }
+    }
+
     const source = $('#scroller1');
     cloneInto($('#scroller-closest'), source);
     cloneInto($('#scroller-end-jump'), source);
@@ -338,5 +355,6 @@
     setupMarkers($('#scroller-proportional-ends .scroller'), selectProportionalEnds);
     setupMarkers($('#scroller-proportional-ends2 .scroller'), selectProportionalEnds);
     setupMarkers($('#scroller-proportional-page .scroller'), selectProportionalPageEnds);
+    createSelfLinks('h2[id], h3[id]');
   </script>
 </html>
