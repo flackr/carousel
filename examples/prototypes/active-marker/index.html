@@ -27,7 +27,8 @@
         margin-left: auto;
         margin-right: auto;
         position: relative;
-        overflow: auto;
+        overflow-x: auto;
+        overflow-y: hidden;
         white-space: nowrap;
         scroll-snap-type: x mandatory;
         counter-reset: item-no;
@@ -175,6 +176,8 @@
         <div class="end-spacer"></div>
       </div>
     </div>
+
+    <h3 id="padding-scroll">Additional scrolling padding</h3>
 
     <p>
       Or by allowing scrolling beyond the normally scrollable range to be able to align those items:
@@ -336,15 +339,16 @@
     }
 
     function selectProportionalPageEnds(scroller, items, markers) {
+      const endAmount = scroller.clientWidth / 8;
       const positions = items.map(item => alignedOffset(item));
       const maxScroll = scroller.scrollWidth - scroller.clientWidth;
-      const firstAlignable = positions.findIndex(p => p > scroller.clientWidth / 2);
-      const lastAlignable = positions.findIndex(p => p > maxScroll - scroller.clientWidth / 2) - 1;
-      if (scroller.scrollLeft < positions[firstAlignable] || scroller.scrollLeft > positions[lastAlignable]) {
+      const firstAlignable = positions.findIndex(p => p > endAmount);
+      const lastAlignable = positions.findIndex(p => p > maxScroll - endAmount) - 1;
+      if (scroller.scrollLeft < endAmount || scroller.scrollLeft > maxScroll - endAmount) {
         const selectStart = scroller.scrollLeft < positions[firstAlignable] ? 0 : lastAlignable + 1;
         const selectLength = scroller.scrollLeft < positions[firstAlignable] ? firstAlignable : items.length - lastAlignable;
-        const scrollStart = scroller.scrollLeft < positions[firstAlignable] ? 0 : positions[lastAlignable];
-        const scrollLength = scroller.scrollLeft < positions[firstAlignable] ? positions[firstAlignable] : maxScroll - positions[lastAlignable];
+        const scrollStart = scroller.scrollLeft < positions[firstAlignable] ? 0 : maxScroll - endAmount;
+        const scrollLength = endAmount;
         return markers[Math.min(markers.length - 1, selectStart + Math.floor(selectLength * (scroller.scrollLeft - scrollStart) / scrollLength))];
       }
       return selectNearest(scroller, items, markers);
@@ -379,5 +383,10 @@
     setupMarkers($('#scroller-proportional-ends2 .scroller'), selectProportionalEnds);
     setupMarkers($('#scroller-proportional-page .scroller'), selectProportionalPageEnds);
     createSelfLinks('h2[id], h3[id]');
+    const referenceScroller = document.createElement('div');
+    referenceScroller.style.overflow = 'scroll';
+    document.body.appendChild(referenceScroller);
+    document.body.style.setProperty('--scrollbar-width', `${referenceScroller.offsetWidth - referenceScroller.clientWidth}px`);
+    document.body.removeChild(referenceScroller);
   </script>
 </html>
