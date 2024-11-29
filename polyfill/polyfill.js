@@ -255,6 +255,9 @@ function columnWidth(elem) {
 class FragmentNode {
   constructor(node) {
     this.container = document.createElement('fragments-container');
+    this.container.tabIndex = 0;
+    this.container.setAttribute('aria-label', 'Carousel scroll area');
+    this.container.setAttribute('role', 'group');
     this.node = node;
     this.fragments = {};
     let child = null;
